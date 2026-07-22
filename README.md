@@ -2,6 +2,10 @@
 
 **Goal-Oriented AI Career Growth Agent**
 
+[![Deployed on Vercel](https://img.shields.io/badge/Vercel-上线-green?logo=vercel)](https://offerpilot-kappa.vercel.app)
+
+> 🔗 线上地址：**[offerpilot-kappa.vercel.app](https://offerpilot-kappa.vercel.app)**
+
 不是学习计划生成器，不是刷题平台。OfferPilot 是一个 AI 职业成长陪伴 Agent——根据你的目标岗位，AI 分析你的能力差距，生成个性化成长路线，通过测验验证学习成果，让你的准备度逐步提升直到拿到 Offer。
 
 ---
