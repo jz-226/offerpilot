@@ -130,6 +130,23 @@ npm run dev -- -H 0.0.0.0 -p 3000
 | `evidence` | 成长证据 |
 | `learning_records` | 学习记录 |
 
+## 📋 产品文档
+
+完整 PRD 文档见 `docs/prd/` 目录，共 8 份：
+
+| 文档 | 内容 |
+|------|------|
+| Product Overview | 产品背景、定位、愿景、目标用户、核心价值 |
+| MVP PRD | 产品需求文档：4 个核心功能需求、MVP 范围 |
+| MVP Prioritization | 优先级划分（P0/P1/P2）、核心闭环定义 |
+| User Flow V1 | 用户流程图：从创建目标到成长反馈 |
+| Information Architecture | 信息架构：页面层级、导航结构 |
+| AI Decision Logic | AI 决策逻辑：何时调分析、何时调建议 |
+| Prompt Design | Prompt 工程设计：System Prompt、输出格式 |
+| Tech Stack & Data Flow | 技术栈选型、数据流向、架构图 |
+
+→ 产看方式：用任意 Markdown 阅读器打开（Typora / VS Code / Notion Import）
+
 ## 🔒 上线检查清单
 
 - [x] `npm run build` 通过
