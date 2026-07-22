@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getLatestAnalysis, getLatestGoal } from "@/lib/supabase/service";
 import { supabase } from "@/lib/supabase/client";
+import { getUserId } from "@/lib/user";
 
 export default function ReflectionPage() {
   const router = useRouter();
@@ -137,7 +138,7 @@ export default function ReflectionPage() {
         <div className="px-6 pt-3 pb-2">
           <button onClick={async () => {
               if (note.trim()) {
-                await supabase.from("reflections").insert({ user_id: "test-user-001", note, summary });
+                await supabase.from("reflections").insert({ user_id: getUserId(), note, summary });
               }
               router.push("/dashboard");
             }}
@@ -145,7 +146,7 @@ export default function ReflectionPage() {
             提交成长记录
           </button>
         </div>
-        <nav className="bg-white border-t border-gray-100 px-2 pt-2 pb-5 flex items-center justify-around">
+        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-2 pt-2 pb-5 safe-bottom flex items-center justify-around z-40">
           {[
             { label: "首页", route: "/dashboard" },
             { label: "路线", route: "/roadmap" },

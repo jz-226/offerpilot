@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { saveAssessment, getLatestGoal } from "@/lib/supabase/service";
+import { getUserId } from "@/lib/user";
 
 // ---- 通用问题 ----
 const baseQuestions = [
@@ -213,7 +214,7 @@ export default function AssessmentPage() {
     setSaving(true);
     try {
       await saveAssessment({
-        user_id: "test-user-001",
+        user_id: getUserId(),
         stage: answers.stage || "",
         project_experience: answers.project_experience || "",
         daily_time: answers.daily_time || "",

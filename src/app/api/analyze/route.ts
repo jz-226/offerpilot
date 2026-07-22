@@ -66,12 +66,12 @@ const ANALYZE_PROMPT = `你是一个严格的职业能力评估分析师。
 
 export async function POST() {
   try {
-    const goal = await getLatestGoal();
+    const goal = await getLatestGoal(false);
     if (!goal) {
       return NextResponse.json({ error: "No goal found" }, { status: 400 });
     }
 
-    const assessment = await getLatestAssessment();
+    const assessment = await getLatestAssessment(false);
 
     // 构建用户背景
     const userProfile = assessment

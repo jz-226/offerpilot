@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createUserGoal } from "@/lib/supabase/service";
+import { getUserId, saveProfile } from "@/lib/user";
 
 const roleCategories = [
   {
@@ -77,13 +78,14 @@ export default function GoalPage() {
     setSaving(true);
     try {
       await createUserGoal({
-        user_id: "test-user-001",
+        user_id: getUserId(),
         target_role: selectedRole,
         target_city: city,
         target_company: company,
         deadline,
         salary_range: salary,
       });
+      saveProfile(selectedRole, city);
       router.push("/assessment");
     } catch (err: any) {
       console.error("保存目标失败:", err?.message || err);

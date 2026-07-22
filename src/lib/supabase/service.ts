@@ -1,6 +1,5 @@
 import { supabase } from "./client";
-
-const TEST_USER_ID = "test-user-001";
+import { getUserId } from "@/lib/user";
 
 // ---- 用户目标 ----
 
@@ -18,7 +17,7 @@ export interface UserGoal {
 export async function createUserGoal(goal: Omit<UserGoal, "id" | "created_at">) {
   const { data, error } = await supabase
     .from("user_goals")
-    .insert({ ...goal, user_id: TEST_USER_ID })
+    .insert({ ...goal, user_id: getUserId() })
     .select()
     .single();
 
@@ -26,15 +25,10 @@ export async function createUserGoal(goal: Omit<UserGoal, "id" | "created_at">) 
   return data as UserGoal;
 }
 
-export async function getLatestGoal() {
-  const { data, error } = await supabase
-    .from("user_goals")
-    .select("*")
-    .eq("user_id", TEST_USER_ID)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .single();
-
+export async function getLatestGoal(withUser: boolean = true) {
+  let query = supabase.from("user_goals").select("*");
+  if (withUser) query = query.eq("user_id", getUserId());
+  const { data, error } = await query.order("created_at", { ascending: false }).limit(1).single();
   if (error) return null;
   return data as UserGoal;
 }
@@ -76,7 +70,7 @@ export interface LearningRecord {
 export async function addLearningRecord(record: Omit<LearningRecord, "id" | "created_at">) {
   const { data, error } = await supabase
     .from("learning_records")
-    .insert({ ...record, user_id: TEST_USER_ID })
+    .insert({ ...record, user_id: getUserId() })
     .select()
     .single();
 
@@ -88,7 +82,7 @@ export async function getLearningRecords() {
   const { data, error } = await supabase
     .from("learning_records")
     .select("*")
-    .eq("user_id", TEST_USER_ID)
+    .eq("user_id", getUserId())
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -108,7 +102,7 @@ export interface Evidence {
 export async function addEvidence(evidence: Omit<Evidence, "id" | "created_at">) {
   const { data, error } = await supabase
     .from("evidence")
-    .insert({ ...evidence, user_id: TEST_USER_ID })
+    .insert({ ...evidence, user_id: getUserId() })
     .select()
     .single();
 
@@ -207,23 +201,16 @@ export async function saveQuizResult(result: Omit<QuizResult, "id" | "created_at
   return data as QuizResult;
 }
 
-// 检查该资源是否允许重做：24h 内最多 3 次
-export async function canRetakeQuiz(resourceName: string): Promise<{ allowed: boolean; attempts: number; reason: string }> {
+// 返回今日该资源已做次数
+export async function canRetakeQuiz(resourceName: string): Promise<{ attempts: number }> {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-
-  const { data, error, count } = await supabase
+  const { count } = await supabase
     .from("quiz_results")
-    .select("*", { count: "exact" })
+    .select("*", { count: "exact", head: true })
     .eq("resource_name", resourceName)
-    .eq("user_id", "test-user-001")
+    .eq("user_id", getUserId())
     .gte("created_at", since);
-
-  const attempts = count || 0;
-
-  if (attempts >= 3) {
-    return { allowed: false, attempts, reason: `24 小时内已用完 3 次机会，明天再试` };
-  }
-  return { allowed: true, attempts, reason: "" };
+  return { attempts: count || 0 };
 }
 
 // 更新 ai_analysis 中的 ability_scores（加分）
@@ -248,11 +235,11 @@ export async function updateAbilityScore(dimension: string, points: number) {
 
 // ---- 阶段计算 ----
 
-export function getCurrentStage(readiness: number, totalStages: number = 4): {
+export function getCurrentStage(readiness: number, totalStages: number = 4, stageNames?: string[]): {
   index: number;
   name: string;
   threshold: number;
-  progress: number; // 当前阶段内进度 0-100
+  progress: number;
 } {
   const perStage = 90 / totalStages;
   const idx = Math.min(Math.floor(readiness / perStage), totalStages - 1);
@@ -260,11 +247,13 @@ export function getCurrentStage(readiness: number, totalStages: number = 4): {
   const stageStart = Math.round(idx * perStage);
   const progress = Math.min(100, Math.round(((readiness - stageStart) / perStage) * 100));
 
-  const names = totalStages === 5
+  // 用 AI 生成的阶段名，回退到默认名
+  const defaults = totalStages === 5
     ? ["基础夯实", "核心技能", "专项突破", "项目实战", "求职冲刺"]
     : ["基础夯实", "技能提升", "项目实战", "求职冲刺"];
+  const name = stageNames?.[idx] || defaults[idx] || `阶段${idx + 1}`;
 
-  return { index: idx, name: names[idx] || `阶段${idx + 1}`, threshold, progress };
+  return { index: idx, name, threshold, progress };
 }
 
 // ---- 打卡 + 趋势 ----
@@ -274,7 +263,7 @@ export async function getRecentActivity(): Promise<Date[]> {
   const { data, error } = await supabase
     .from("quiz_results")
     .select("created_at")
-    .eq("user_id", "test-user-001")
+    .eq("user_id", getUserId())
     .gte("created_at", since)
     .order("created_at", { ascending: true });
 
@@ -294,19 +283,15 @@ export async function getTodayQuizGain(): Promise<number> {
   const { count } = await supabase
     .from("quiz_results")
     .select("*", { count: "exact", head: true })
-    .eq("user_id", "test-user-001")
+    .eq("user_id", getUserId())
     .gte("created_at", since.toISOString());
   return count || 0;
 }
 
-export async function getLatestAssessment() {
-  const { data, error } = await supabase
-    .from("user_assessment")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .single();
-
+export async function getLatestAssessment(withUser: boolean = true) {
+  let query = supabase.from("user_assessment").select("*");
+  if (withUser) query = query.eq("user_id", getUserId());
+  const { data, error } = await query.order("created_at", { ascending: false }).limit(1).single();
   if (error) return null;
   return data as UserAssessment;
 }

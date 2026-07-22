@@ -59,7 +59,7 @@ export default function SplashPage() {
       {/* Bottom: CTA */}
       <div className="w-full max-w-sm">
         <button
-          onClick={() => router.push("/onboarding")}
+          onClick={() => router.push("/login")}
           className="w-full py-4 bg-blue-500 hover:bg-blue-600 active:scale-[0.98] text-white font-semibold text-lg rounded-2xl transition-all shadow-lg shadow-blue-200"
         >
           开始创建目标

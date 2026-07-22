@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getRecentActivity, getLatestAnalysis, getTodayQuizGain, getCurrentStage, type AIAnalysis } from "@/lib/supabase/service";
+import { getUserName } from "@/lib/user";
 
 function calcReadiness(scores: { score: number }[]): number {
   if (!scores.length) return 0;
@@ -74,10 +75,12 @@ function NavIcon({ name, active }: { name: string; active: boolean }) {
 export default function DashboardPage() {
   const router = useRouter();
   const [activityDays, setActivityDays] = useState<Set<string>>(new Set());
-  const [readiness, setReadiness] = useState(42);
+  const [readiness, setReadiness] = useState<number | null>(null);
+  const [hasData, setHasData] = useState(false);
   const [trendChange, setTrendChange] = useState<number | null>(null);
   const [trendData, setTrendData] = useState<number[]>([38, 40, 41, 39, 42, 42, 42]);
   const [nextAction, setNextAction] = useState("");
+  const [allDone, setAllDone] = useState(false);
   const [weakestDim, setWeakestDim] = useState("");
   const [targetRole, setTargetRole] = useState("");
   const [stage, setStage] = useState<ReturnType<typeof getCurrentStage> | null>(null);
@@ -90,7 +93,9 @@ export default function DashboardPage() {
       if (analysis?.ability_scores?.length) {
         const r = calcReadiness(analysis.ability_scores);
         setReadiness(r);
-        setStage(getCurrentStage(r, analysis.roadmap?.length || 4));
+        setHasData(true);
+        setAllDone(r >= 90);
+        setStage(getCurrentStage(r, analysis.roadmap?.length || 4, analysis.roadmap?.map((s: any) => s.stage)));
         const sorted = [...analysis.ability_scores].sort((a, b) => a.score - b.score);
         if (sorted[0]) setWeakestDim(sorted[0].dimension);
       }
@@ -129,11 +134,16 @@ export default function DashboardPage() {
   return (
     <main className="min-h-screen flex flex-col" style={{ background: "#f8faff" }}>
       {/* Scrollable content */}
-      <div className="flex-1 overflow-auto pb-4">
+      <div className="flex-1 overflow-auto pb-24">
         {/* Greeting */}
         <div className="px-6 pt-8 pb-4">
           <h1 className="text-2xl font-bold text-gray-900">
-            早上好，姜梓 <span className="inline-block animate-pulse">👋</span>
+            {(() => {
+              const h = new Date().getHours();
+              const greeting = h < 6 ? "凌晨好" : h < 12 ? "早上好" : h < 14 ? "中午好" : h < 18 ? "下午好" : "晚上好";
+              const name = getUserName();
+              return <>{greeting}{name ? `，${name}` : ""} <span className="inline-block animate-pulse">👋</span></>;
+            })()}
           </h1>
           <p className="text-gray-400 text-sm mt-1">
             今天也向目标 Offer 前进一步
@@ -163,7 +173,7 @@ export default function DashboardPage() {
                   <circle cx="36" cy="36" r="30" fill="none" stroke="#f1f5f9" strokeWidth="6" />
                   <circle cx="36" cy="36" r="30" fill="none" stroke="url(#dashGrad)" strokeWidth="6" strokeLinecap="round"
                     strokeDasharray={`${2 * Math.PI * 30}`}
-                    strokeDashoffset={`${2 * Math.PI * 30 * (1 - readiness / 100)}`} />
+                    strokeDashoffset={`${2 * Math.PI * 30 * (1 - (readiness || 0) / 100)}`} />
                   <defs>
                     <linearGradient id="dashGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                       <stop offset="0%" stopColor="#3b82f6" />
@@ -172,7 +182,7 @@ export default function DashboardPage() {
                   </defs>
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-lg font-bold text-blue-500">{readiness}%</span>
+                  <span className="text-lg font-bold text-blue-500">{readiness !== null ? `${readiness}%` : "—"}</span>
                 </div>
               </div>
 
@@ -224,7 +234,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-base font-semibold text-gray-900 leading-tight">
-                  {nextAction ? `优先：${nextAction.slice(0, 25)}${nextAction.length > 25 ? "..." : ""}` : "去学习中心完成今日测验"}
+                  {nextAction ? `优先：${nextAction.slice(0, 25)}${nextAction.length > 25 ? "..." : ""}` : hasData ? "去学习中心完成今日测验" : "请先创建目标"}
                 </h3>
                 <div className="flex items-center gap-2 mt-1.5">
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -260,7 +270,9 @@ export default function DashboardPage() {
                 </svg>
               </div>
               <p className="text-sm text-gray-600 leading-relaxed flex-1">
-                {stage
+                {allDone
+                  ? <><span className="font-semibold text-gray-900">🎉 所有阶段已完成！</span>你的能力已经达到目标岗位的基础要求，可以去投递简历了。</>
+                  : stage
                   ? <>当前处于<span className="font-semibold text-gray-900">「{stage.name}」</span>阶段{weakestDim ? <>，优先提升 <span className="font-semibold text-gray-900">{weakestDim}</span></> : ""}。完成测验推进到下一阶段。</>
                   : <>去<span className="font-semibold text-gray-900">学习中心</span>完成今日测验，让 AI 帮你定位当前最需要提升的能力。</>}
               </p>
@@ -336,8 +348,8 @@ export default function DashboardPage() {
         <div className="h-4" />
       </div>
 
-      {/* Bottom Nav */}
-      <nav className="bg-white border-t border-gray-100 px-2 pt-2 pb-5 flex items-center justify-around">
+      {/* Bottom Nav — 固定底部 */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-2 pt-2 pb-5 safe-bottom flex items-center justify-around">
         {navItems.map((item) => (
           <button
             key={item.label}

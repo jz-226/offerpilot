@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getLatestAnalysis, getRecentActivity, getTodayQuizGain } from "@/lib/supabase/service";
 import { supabase } from "@/lib/supabase/client";
+import { getUserId } from "@/lib/user";
+import { getMilestone, getNextMilestone } from "@/lib/milestone";
 
 const navItems = [
   { label: "首页", icon: "home", route: "/dashboard", active: false },
@@ -64,11 +66,11 @@ export default function GrowthPage() {
       getTodayQuizGain(),
       getRecentActivity(),
       // 总测验次数
-      supabase.from("quiz_results").select("*", { count: "exact" }).eq("user_id", "test-user-001"),
+      supabase.from("quiz_results").select("*", { count: "exact" }).eq("user_id", getUserId()),
       // 最近 10 条测验记录
-      supabase.from("quiz_results").select("*").eq("user_id", "test-user-001").order("created_at", { ascending: false }).limit(10),
+      supabase.from("quiz_results").select("*").eq("user_id", getUserId()).order("created_at", { ascending: false }).limit(10),
       // 反思记录
-      supabase.from("reflections").select("*").eq("user_id", "test-user-001").order("created_at", { ascending: false }).limit(10),
+      supabase.from("reflections").select("*").eq("user_id", getUserId()).order("created_at", { ascending: false }).limit(10),
     ]).then(([analysis, gain, dates, { count }, { data: quizData }, { data: reflectionData }]) => {
       // 能力维度
       if (analysis?.ability_scores?.length) {
@@ -171,19 +173,27 @@ export default function GrowthPage() {
             {abilities.length > 0 && (
               <div className="px-6 mb-4">
                 <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">能力成长</h2>
-                <p className="text-xs text-gray-300 mb-3">AI 根据你的自评 + 目标岗位要求，对每个维度的当前水平评估（0-100）</p>
+                <p className="text-xs text-gray-300 mb-2">AI 评估的当前水平</p>
+                <div className="flex flex-wrap gap-x-3 gap-y-1 mb-3 text-[11px] text-gray-300">
+                  <span>🌱 入门</span><span>🌿 基础</span><span>🪴 独立</span><span>🌳 熟练</span><span>🏆 精通</span>
+                </div>
                 <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 space-y-4">
-                  {abilities.map((a) => (
+                  {abilities.map((a) => {
+                    const ms = getMilestone(a.value);
+                    const next = getNextMilestone(a.value);
+                    return (
                     <div key={a.name}>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-sm font-medium text-gray-700">{a.name}</span>
-                        <span className="text-sm font-semibold text-gray-900">{a.value}</span>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium text-gray-700">{a.name} {ms.icon}</span>
+                        <span className="text-xs text-gray-400">{ms.name} · {a.value}</span>
                       </div>
-                      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mb-0.5">
                         <div className={`h-full bg-gradient-to-r ${dimColor(a.value)} rounded-full transition-all`} style={{ width: `${a.value}%` }} />
                       </div>
+                      {next && <p className="text-[11px] text-gray-300">距「{next.icon} {next.name}」还差 {next.min - a.value} 分</p>}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -205,11 +215,11 @@ export default function GrowthPage() {
                             <span className="text-[11px] text-gray-300 font-medium">{r.date}{r.type === "reflection" ? " · 反思" : " · 测验"}</span>
                             <div className="relative">
                               <button onClick={(e) => { e.stopPropagation(); setOpenMenu(openMenu === r.dbKey ? null : r.dbKey); }}
-                                className="w-6 h-6 rounded-full flex items-center justify-center text-gray-300 hover:bg-gray-50 hover:text-gray-500 transition-colors">
+                                className="w-10 h-10 rounded-full flex items-center justify-center text-gray-300 hover:bg-gray-50 hover:text-gray-500 transition-colors -mr-2">
                                 <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><circle cx="3" cy="7" r="1.5" /><circle cx="7" cy="7" r="1.5" /><circle cx="11" cy="7" r="1.5" /></svg>
                               </button>
                               {openMenu === r.dbKey && (
-                                <div className="absolute right-0 top-7 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-10 min-w-[100px]">
+                                <div className="absolute right-0 top-9 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-10 min-w-[80px]">
                                   <button onClick={() => handleDelete(r)}
                                     className="w-full text-left px-4 py-2 text-xs text-red-500 hover:bg-red-50 transition-colors">删除</button>
                                 </div>
@@ -224,7 +234,7 @@ export default function GrowthPage() {
                           <div className={`rounded-xl px-3 py-2.5 mb-2.5 ${r.type === "reflection" ? "bg-indigo-50" : "bg-gray-50"}`}>
                             <div className="flex items-center gap-1.5 mb-1">
                               <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4" stroke="#6366f1" strokeWidth="1" /><circle cx="6" cy="6" r="1.5" fill="#6366f1" /></svg>
-                              <span className="text-[10px] font-medium text-indigo-500">{r.type === "reflection" ? "AI 总结" : "AI 反馈"}</span>
+                              <span className="text-[11px] font-medium text-indigo-500">{r.type === "reflection" ? "AI 总结" : "AI 反馈"}</span>
                             </div>
                             <p className="text-xs text-gray-600 leading-relaxed">{r.feedback}</p>
                           </div>
@@ -271,12 +281,12 @@ export default function GrowthPage() {
         )}
       </div>
 
-      <nav className="bg-white border-t border-gray-100 px-2 pt-2 pb-5 flex items-center justify-around">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-2 pt-2 pb-5 safe-bottom flex items-center justify-around z-40">
         {navItems.map((item) => (
           <button key={item.label} onClick={() => router.push(item.route)}
             className={`flex flex-col items-center gap-0.5 px-3 py-1 transition-colors ${item.active ? "text-blue-500" : "text-gray-300 hover:text-gray-400"}`}>
             <NavIcon name={item.icon} active={item.active} />
-            <span className="text-[10px] font-medium">{item.label}</span>
+            <span className="text-[11px] font-medium">{item.label}</span>
           </button>
         ))}
       </nav>

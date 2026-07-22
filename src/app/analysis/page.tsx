@@ -171,7 +171,7 @@ export default function AnalysisPage() {
           </div>
 
           {/* Fixed Bottom CTA */}
-          <div className="fixed bottom-0 left-0 right-0 px-6 pt-3 pb-8 bg-gradient-to-t from-white via-white to-transparent">
+          <div className="fixed bottom-0 left-0 right-0 px-6 pt-3 pb-8 safe-bottom bg-gradient-to-t from-white via-white to-transparent">
             <div className="max-w-lg mx-auto">
               <button
                 onClick={() => router.push("/dashboard")}
