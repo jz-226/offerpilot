@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getLatestAnalysis, getLatestGoal, getRecentActivity, getTodayQuizGain } from "@/lib/supabase/service";
 import { supabase } from "@/lib/supabase/client";
-import { getUserId, getProfiles, switchProfile, createNewProfile } from "@/lib/user";
+import { getUserId, getProfiles, switchProfile, createNewProfile, getUserName } from "@/lib/user";
 import { getMilestone, getNextMilestone } from "@/lib/milestone";
 
 const navItems = [
@@ -100,7 +100,7 @@ export default function ProfilePage() {
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center flex-shrink-0 shadow-md shadow-blue-200">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="white" strokeWidth="2" /><path d="M4 20C4 16 8 14 12 14C16 14 20 16 20 20" stroke="white" strokeWidth="2" strokeLinecap="round" /></svg>
             </div>
-            <div><h1 className="text-xl font-bold text-gray-900">姜同学</h1><p className="text-sm text-gray-400">{targetRole || "未设置目标"}</p></div>
+            <div><h1 className="text-xl font-bold text-gray-900">{getUserName() || "未设置姓名"}</h1><p className="text-sm text-gray-400">{targetRole || "未设置目标"}</p></div>
           </div>
         </div>
 
