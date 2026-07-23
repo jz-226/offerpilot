@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createUserGoal } from "@/lib/supabase/service";
-import { getUserId, saveProfile } from "@/lib/user";
+import { getUserId, saveProfile, createNewProfile, getProfiles } from "@/lib/user";
 
 const roleCategories = [
   {
@@ -77,6 +77,11 @@ export default function GoalPage() {
   const handleSubmit = async () => {
     setSaving(true);
     try {
+      // 如果已有档案，新建一个隔离的新档案
+      const existing = getProfiles();
+      if (existing.length > 0) {
+        createNewProfile();
+      }
       await createUserGoal({
         user_id: getUserId(),
         target_role: selectedRole,
