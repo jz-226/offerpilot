@@ -186,9 +186,9 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Mini trend chart */}
-              <div className="flex-1">
-                <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-9">
+              {/* Mini trend chart — 宽度自适应、高度随屏幕变化 */}
+              <div className="flex-1 min-w-0">
+                <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-12 sm:h-14 md:h-16">
                   {/* Gradient fill */}
                   <defs>
                     <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
