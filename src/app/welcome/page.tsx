@@ -22,7 +22,7 @@ export default function WelcomePage() {
       if (user) {
         createClient().from("user_goals").select("id, target_role, target_city").eq("user_id", user.id)
           .order("created_at", { ascending: false })
-          .then(({ data }) => { setGoals(data || []); setLoading(false); });
+          .then(({ data }) => { setGoals((data || []).map((g) => ({ id: g.id, role: g.target_role || "", city: g.target_city || "" }))); setLoading(false); });
       } else {
         setLoading(false);
       }
