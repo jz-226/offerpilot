@@ -6,6 +6,10 @@
 
 > 🔗 线上地址：**[offerpilot-kappa.vercel.app](https://offerpilot-kappa.vercel.app)**
 
+## 🎬 演示视频
+
+📹 [下载演示视频（2 分 49 秒）](docs/demo.mp4)
+
 不是学习计划生成器，不是刷题平台。OfferPilot 是一个 AI 职业成长陪伴 Agent——根据你的目标岗位，AI 分析你的能力差距，生成个性化成长路线，通过测验验证学习成果，让你的准备度逐步提升直到拿到 Offer。
 
 ---
@@ -26,6 +30,7 @@ AI 路线：每个阶段该学什么
 
 ## ✨ 功能
 
+- **邮箱验证码登录** — Supabase Auth，邮箱注册/登录，数据多端同步不丢失
 - **150+ 岗位选择** — 对标 BOSS直聘真实分类，产品/前端/后端/数据/算法/设计/运营全覆盖
 - **AI 能力分析** — DeepSeek 两阶段分析：先识别岗位类型，再评估能力差距
 - **动态评估** — 根据岗位自动切换评估维度，共 17 组 JD 匹配规则
@@ -52,8 +57,8 @@ AI 路线：每个阶段该学什么
 src/
 ├── app/
 │   ├── page.tsx              # Splash 欢迎页
-│   ├── login/                # 手机号登录
-│   ├── welcome/              # 名字输入
+│   ├── login/                # 邮箱验证码登录（Supabase Auth）
+│   ├── welcome/              # 名字输入 + 岗位选择
 │   ├── onboarding/           # 功能介绍
 │   ├── goal/                 # 目标创建（150+ 岗位选择器）
 │   ├── assessment/           # 能力自评（动态 JD 匹配）
