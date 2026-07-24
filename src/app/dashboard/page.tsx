@@ -82,11 +82,13 @@ export default function DashboardPage() {
   const [nextAction, setNextAction] = useState("");
   const [allDone, setAllDone] = useState(false);
   const [weakestDim, setWeakestDim] = useState("");
+  const [userName, setUserNameState] = useState("");
   const [targetRole, setTargetRole] = useState("");
   const [stage, setStage] = useState<ReturnType<typeof getCurrentStage> | null>(null);
 
   useEffect(() => {
     Promise.all([getRecentActivity(), getLatestAnalysis(), getTodayQuizGain()]).then(([dates, analysis, gain]) => {
+      setUserNameState(getUserName());
       const set = new Set<string>();
       dates.forEach((d) => set.add(`${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`));
       setActivityDays(set);
@@ -141,8 +143,7 @@ export default function DashboardPage() {
             {(() => {
               const h = new Date().getHours();
               const greeting = h < 6 ? "凌晨好" : h < 12 ? "早上好" : h < 14 ? "中午好" : h < 18 ? "下午好" : "晚上好";
-              const name = getUserName();
-              return <>{greeting}{name ? `，${name}` : ""} <span className="inline-block animate-pulse">👋</span></>;
+              return <>{greeting}{userName ? `，${userName}` : ""} <span className="inline-block animate-pulse">👋</span></>;
             })()}
           </h1>
           <p className="text-gray-400 text-sm mt-1">

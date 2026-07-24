@@ -52,9 +52,11 @@ export default function ProfilePage() {
   const [records, setRecords] = useState<any[]>([]);
   const [expanded, setExpanded] = useState<number | null>(null);
   const [profiles, setProfiles] = useState(getProfiles());
+  const [displayName, setDisplayName] = useState("");
   const uid = getUserId();
 
   useEffect(() => {
+    setDisplayName(getUserName());
     Promise.all([
       getLatestAnalysis(),
       getLatestGoal(),
@@ -79,8 +81,8 @@ export default function ProfilePage() {
 
       // 最近记录
       const timeline: any[] = [];
-      (quizData || []).forEach((q) => timeline.push({ type: "quiz", title: `完成测验：${q.resource_name}`, time: new Date(q.created_at).toISOString().slice(0, 10), feedback: q.score >= 4 ? "掌握程度较高" : q.score >= 2 ? "有一定理解" : "建议重新学习", detail: `${q.score}/${q.total} 题正确`, ts: new Date(q.created_at).getTime() }));
-      (reflData || []).forEach((r) => timeline.push({ type: "reflection", title: "提交成长总结", time: new Date(r.created_at).toISOString().slice(0, 10), feedback: r.summary || "记录了今日心得", detail: r.note?.slice(0, 100) || "", ts: new Date(r.created_at).getTime() }));
+      (quizData || []).forEach((q: any) => timeline.push({ type: "quiz", title: `完成测验：${q.resource_name}`, time: new Date(q.created_at).toISOString().slice(0, 10), feedback: q.score >= 4 ? "掌握程度较高" : q.score >= 2 ? "有一定理解" : "建议重新学习", detail: `${q.score}/${q.total} 题正确`, ts: new Date(q.created_at).getTime() }));
+      (reflData || []).forEach((r: any) => timeline.push({ type: "reflection", title: "提交成长总结", time: new Date(r.created_at).toISOString().slice(0, 10), feedback: r.summary || "记录了今日心得", detail: r.note?.slice(0, 100) || "", ts: new Date(r.created_at).getTime() }));
       timeline.sort((a, b) => b.ts - a.ts);
       setRecords(timeline.slice(0, 10));
     });
@@ -100,7 +102,7 @@ export default function ProfilePage() {
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center flex-shrink-0 shadow-md shadow-blue-200">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="white" strokeWidth="2" /><path d="M4 20C4 16 8 14 12 14C16 14 20 16 20 20" stroke="white" strokeWidth="2" strokeLinecap="round" /></svg>
             </div>
-            <div><h1 className="text-xl font-bold text-gray-900">{getUserName() || "未设置姓名"}</h1><p className="text-sm text-gray-400">{targetRole || "未设置目标"}</p></div>
+            <div><h1 className="text-xl font-bold text-gray-900">{displayName || "未设置姓名"}</h1><p className="text-sm text-gray-400">{targetRole || "未设置目标"}</p></div>
           </div>
         </div>
 
@@ -225,6 +227,28 @@ export default function ProfilePage() {
                 </div>
               </div>
             )}
+            {/* 设置 */}
+            <div className="px-6 pt-2 pb-4">
+              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2.5">设置</h2>
+              <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden divide-y divide-gray-50">
+                <button onClick={() => router.push("/login")}
+                  className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
+                  <span className="text-sm text-gray-700">切换账号</span>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                </button>
+                <button onClick={async () => {
+                  if (confirm("确定要退出登录吗？")) {
+                    const { createClient } = await import("@/lib/supabase/client");
+                    await createClient().auth.signOut();
+                    window.location.href = "/login";
+                  }
+                }}
+                  className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-red-50 transition-colors">
+                  <span className="text-sm text-red-500">退出登录</span>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                </button>
+              </div>
+            </div>
             <div className="h-4" />
           </>
         )}

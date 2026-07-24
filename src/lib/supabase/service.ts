@@ -1,5 +1,7 @@
-import { supabase } from "./client";
+import { createClient } from "./client";
 import { getUserId } from "@/lib/user";
+
+const supabase = typeof window !== "undefined" ? createClient() : createClient(); // always use browser client
 
 // ---- 用户目标 ----
 

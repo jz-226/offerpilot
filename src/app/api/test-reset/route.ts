@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
   try {
     const { uid } = await req.json();
+    const supabase = await createClient();
 
     // 1. 建一个满分 goal
     const { data: goal } = await supabase.from("user_goals").insert({

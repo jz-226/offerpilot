@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getLatestGoal, getLatestAssessment } from "@/lib/supabase/service";
 import { chat } from "@/lib/ai/deepseek";
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/server";
 
 // ====== 阶段 1：岗位分类 ======
 const CLASSIFY_PROMPT = `你是一个岗位分类器。根据用户输入的目标岗位，判断它属于哪个类别。
@@ -141,6 +141,7 @@ ${context}
     }
 
     // 保存
+    const supabase = await createClient();
     const { data: saved, error } = await supabase
       .from("ai_analysis")
       .insert({

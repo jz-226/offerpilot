@@ -103,7 +103,7 @@ export default function GrowthPage() {
       // 合并测验 + 反思时间线
       const timeline: any[] = [];
       if (quizData?.length) {
-        quizData.forEach((r) => timeline.push({
+        quizData.forEach((r: any) => timeline.push({
           dbKey: `quiz_${r.id}`,
           table: "quiz_results",
           dbId: r.id,
@@ -118,7 +118,7 @@ export default function GrowthPage() {
         }));
       }
       if (reflectionData?.length) {
-        reflectionData.forEach((r) => timeline.push({
+        reflectionData.forEach((r: any) => timeline.push({
           dbKey: `ref_${r.id}`,
           table: "reflections",
           dbId: r.id,
