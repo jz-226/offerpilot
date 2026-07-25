@@ -113,17 +113,28 @@ export default function ProfilePage() {
             {profiles.map((p) => {
               const isActive = p.id === uid;
               return (
-                <button key={p.id}
-                  onClick={() => { if (!isActive) switchProfile(p.id); }}
-                  className={`w-full text-left bg-white rounded-2xl border p-4 transition-all ${isActive ? "border-blue-200 shadow-sm shadow-blue-50" : "border-gray-100 hover:border-gray-200"}`}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-900">{p.role || "未设置"}</h3>
-                      <p className="text-[11px] text-gray-400 mt-0.5">{p.city || "未填城市"} · {p.createdAt ? new Date(p.createdAt).toISOString().slice(0, 10) : ""}</p>
+                <div key={p.id} className="relative">
+                  <button
+                    onClick={() => { if (!isActive) switchProfile(p.id); }}
+                    className={`w-full text-left bg-white rounded-2xl border p-4 pr-12 transition-all ${isActive ? "border-blue-200 shadow-sm shadow-blue-50" : "border-gray-100 hover:border-gray-200"}`}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900">{p.role || "未设置"}</h3>
+                        <p className="text-[11px] text-gray-400 mt-0.5">{p.city || "未填城市"} · {p.createdAt ? new Date(p.createdAt).toISOString().slice(0, 10) : ""}</p>
+                      </div>
+                      {isActive && <span className="text-[10px] font-medium bg-blue-50 text-blue-600 px-2 py-1 rounded-lg">当前</span>}
                     </div>
-                    {isActive && <span className="text-[10px] font-medium bg-blue-50 text-blue-600 px-2 py-1 rounded-lg">当前</span>}
-                  </div>
-                </button>
+                  </button>
+                  <button onClick={async (e) => {
+                    e.stopPropagation();
+                    if (!confirm("删除这个岗位档案？")) return;
+                    await supabase.from("user_goals").delete().eq("id", Number(p.id));
+                    setProfiles((prev) => prev.filter((x) => x.id !== p.id));
+                  }}
+                    className="absolute right-3 top-3 w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3L11 11M3 11L11 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                  </button>
+                </div>
               );
             })}
           </div>

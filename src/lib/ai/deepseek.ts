@@ -16,7 +16,7 @@ export async function chat(messages: DeepSeekMessage[], options?: { temperature?
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "deepseek-chat",
+      model: "deepseek-v4-pro",
       messages,
       temperature: options?.temperature ?? 0.3,
       max_tokens: options?.max_tokens ?? 2048,
