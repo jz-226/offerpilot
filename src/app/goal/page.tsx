@@ -89,8 +89,6 @@ export default function GoalPage() {
 
     setSaving(true);
     try {
-      // 每个新岗位用独立档案——数据完全隔离
-      createNewProfile();
       const goal = await createUserGoal({
         user_id: getUserId(),
         target_role: selectedRole,
