@@ -238,8 +238,34 @@ export default function ProfilePage() {
                 </div>
               </div>
             )}
-            {/* 设置 */}
-            <div className="px-6 pt-2 pb-4">
+        )}
+        {/* 设置 — 始终显示 */}
+        <div className="px-6 pt-4 pb-4">
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2.5">设置</h2>
+          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden divide-y divide-gray-50">
+            <button onClick={() => { localStorage.clear(); router.push("/login"); }}
+              className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
+              <span className="text-sm text-gray-700">切换账号</span>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+            <button onClick={async () => {
+              if (confirm("确定要退出登录吗？")) {
+                localStorage.clear();
+                const { createClient } = await import("@/lib/supabase/client");
+                await createClient().auth.signOut();
+                window.location.href = "/login";
+              }
+            }}
+              className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-red-50 transition-colors">
+              <span className="text-sm text-red-500">退出登录</span>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+          </div>
+        </div>
+        <div className="h-4" />
+
+        {/* 原设置区删掉重复 */}
+        {false && (<div className="px-6 pt-2 pb-4">
               <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2.5">设置</h2>
               <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden divide-y divide-gray-50">
                 <button onClick={() => {

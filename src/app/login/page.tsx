@@ -18,11 +18,9 @@ export default function LoginPage() {
   useEffect(() => {
     const c = createClient();
     c.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        setAuthUserId(user.id);
-        if (getUserName()) { router.replace("/welcome"); return; }
-      }
+      if (user) setAuthUserId(user.id);
       setChecking(false);
+      // 不再自动跳转——让用户看到账号列表和登录选项
     });
   }, []);
 
