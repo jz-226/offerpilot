@@ -23,8 +23,8 @@ export default function AuthSync() {
         setProfileNickname(nick);
       } else {
         setProfileNickname(profile.nickname || "User");
-        // 恢复上次激活的 goal
-        if (profile.active_goal_id) {
+        // 恢复上次激活的 goal——但不要覆盖刚切换的值
+        if (profile.active_goal_id && !localStorage.getItem("offerpilot_active_goal")) {
           localStorage.setItem("offerpilot_active_goal", String(profile.active_goal_id));
         }
       }
