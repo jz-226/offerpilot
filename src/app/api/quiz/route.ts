@@ -70,8 +70,15 @@ export async function POST(req: Request) {
     try {
       parsed = JSON.parse(raw);
     } catch {
-      const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-      parsed = JSON.parse(cleaned);
+      // 修补 AI 返回的残缺 JSON
+      let cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      // 去掉 JSON 中的换行符（在字符串内部会被破坏）
+      cleaned = cleaned.replace(/\n/g, " ").replace(/\r/g, "");
+      // 去掉尾部逗号
+      cleaned = cleaned.replace(/,(\s*[}\]])/g, "$1");
+      try { parsed = JSON.parse(cleaned); } catch {
+        throw new Error("AI 返回格式异常，请重试");
+      }
     }
 
     return NextResponse.json({ questions: parsed.questions });

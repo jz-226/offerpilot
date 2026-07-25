@@ -136,7 +136,9 @@ ${context}
     try {
       parsed = JSON.parse(raw);
     } catch {
-      const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      let cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      cleaned = cleaned.replace(/\n/g, " ").replace(/\r/g, "");
+      cleaned = cleaned.replace(/,(\s*[}\]])/g, "$1");
       parsed = JSON.parse(cleaned);
     }
 

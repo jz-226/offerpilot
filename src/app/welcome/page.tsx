@@ -113,6 +113,8 @@ export default function WelcomePage() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="输入你的名字"
+          autoComplete="new-password"
+          name="display-name"
           autoFocus
           className="w-full text-center text-2xl text-gray-900 font-medium bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4 placeholder:text-gray-300 focus:outline-none focus:border-blue-200 transition-all"
         />
