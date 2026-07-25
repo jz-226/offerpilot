@@ -49,11 +49,11 @@ export function setUserName(name: string) { _profileNickname = name; }
 
 // ===== 当前选中的目标档案 =====
 const GOAL_KEY = "offerpilot_active_goal";
-let _activeGoalId: number | null = parseInt(localStorage.getItem(GOAL_KEY) || "0") || null;
+let _activeGoalId: number | null | undefined = undefined;
 
 export function setActiveGoalId(id: number) {
   _activeGoalId = id;
-  localStorage.setItem(GOAL_KEY, String(id));
+  if (typeof window !== "undefined") localStorage.setItem(GOAL_KEY, String(id));
   // 同步到 Supabase
   if (_authUserId && typeof window !== "undefined") {
     import("@/lib/supabase/client").then(({ createClient }) => {
@@ -63,7 +63,8 @@ export function setActiveGoalId(id: number) {
 }
 
 export function getActiveGoalId(): number | null {
-  if (_activeGoalId) return _activeGoalId;
+  if (_activeGoalId !== undefined) return _activeGoalId;
+  if (typeof window === "undefined") return null;
   const v = localStorage.getItem(GOAL_KEY);
   _activeGoalId = v ? Number(v) : null;
   return _activeGoalId;
