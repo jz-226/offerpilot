@@ -23,9 +23,13 @@ export default function AuthSync() {
         setProfileNickname(nick);
       } else {
         setProfileNickname(profile.nickname || "User");
-        // 恢复上次激活的 goal——但不要覆盖刚切换的值
-        if (profile.active_goal_id && !localStorage.getItem("offerpilot_active_goal")) {
-          localStorage.setItem("offerpilot_active_goal", String(profile.active_goal_id));
+
+        // 如果没有选中任何目标，自动选第一个
+        if (!localStorage.getItem("offerpilot_active_goal")) {
+          const { data: goals } = await c.from("user_goals").select("id").eq("user_id", user.id).order("created_at", { ascending: true }).limit(1);
+          if (goals?.length) {
+            localStorage.setItem("offerpilot_active_goal", String(goals[0].id));
+          }
         }
       }
     });
