@@ -108,7 +108,7 @@ export default function ReflectionPage() {
 
         {/* AI Summary */}
         {(summary || summarizing) && (
-          <div className="px-6">
+          <div className="px-6 mb-4">
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2.5">AI 总结</h2>
             <div className="bg-white rounded-3xl border border-indigo-100 shadow-sm shadow-indigo-50 p-5">
               {summarizing ? (
@@ -129,23 +129,23 @@ export default function ReflectionPage() {
                 </div>
               )}
             </div>
+            {/* 提交按钮 */}
+            <button onClick={async () => {
+                if (note.trim()) {
+                  await supabase.from("reflections").insert({ user_id: getUserId(), note, summary });
+                }
+                router.push("/dashboard");
+              }}
+              className="w-full mt-3 py-4 bg-blue-500 hover:bg-blue-600 active:scale-[0.98] text-white font-semibold text-lg rounded-2xl transition-all shadow-lg shadow-blue-200">
+              提交成长记录
+            </button>
           </div>
         )}
       </div>
 
-      {/* Fixed Bottom CTA + Nav */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent">
-        <div className="px-6 pt-3 pb-2">
-          <button onClick={async () => {
-              if (note.trim()) {
-                await supabase.from("reflections").insert({ user_id: getUserId(), note, summary });
-              }
-              router.push("/dashboard");
-            }}
-            className="w-full py-4 bg-blue-500 hover:bg-blue-600 active:scale-[0.98] text-white font-semibold text-lg rounded-2xl transition-all shadow-lg shadow-blue-200">
-            提交成长记录
-          </button>
-        </div>
+      {/* Bottom Nav */}
+      <div className="mt-auto pt-3 pb-2 safe-bottom">
+        <div className="px-6 pb-2">
         <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-2 pt-2 pb-5 safe-bottom flex items-center justify-around z-40">
           {[
             { label: "首页", route: "/dashboard" },
