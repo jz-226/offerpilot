@@ -146,7 +146,7 @@ export default function ProfilePage() {
                       console.log("switch goal clicked", p.id, p.role);
                       alert(`正在切换到：${p.role}`);
                       setActiveGoalId(Number(p.id));
-                      router.push("/dashboard");
+                      window.location.href = "/dashboard";
                     }}
                     className={`w-full text-left bg-white rounded-2xl border p-4 pr-12 transition-all ${isActive ? "border-blue-200 shadow-sm shadow-blue-50" : "border-gray-100 hover:border-gray-200"}`}>
                     <div className="flex items-center justify-between">
