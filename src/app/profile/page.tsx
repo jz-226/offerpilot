@@ -60,7 +60,6 @@ export default function ProfilePage() {
   useEffect(() => {
     setDisplayName(getUserName());
     const goalId = getActiveGoalId();
-    console.log("Profile: user=", uid, " goal=", goalId);
     Promise.all([
       getLatestAnalysis(),
       // 用 activeGoalId 查目标，不是最新目标

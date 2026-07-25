@@ -87,7 +87,6 @@ export default function DashboardPage() {
   const [stage, setStage] = useState<ReturnType<typeof getCurrentStage> | null>(null);
 
   useEffect(() => {
-    console.log("Dashboard: goalId=", getActiveGoalId());
     Promise.all([getRecentActivity(), getLatestAnalysis(), getTodayQuizGain()]).then(([dates, analysis, gain]) => {
       setUserNameState(getUserName());
       const set = new Set<string>();

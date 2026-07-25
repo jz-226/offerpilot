@@ -104,7 +104,6 @@ export default function RoadmapPage() {
   const [userTime, setUserTime] = useState<number>(6);
 
   useEffect(() => {
-    console.log("Roadmap: goalId=", getActiveGoalId());
     Promise.all([getLatestAnalysis(), getLatestGoal()]).then(([a, g]) => {
       setAnalysis(a);
       if (g) setGoal({ target_role: g.target_role, target_city: g.target_city, deadline: g.deadline });
