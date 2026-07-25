@@ -19,10 +19,13 @@ export default function LoginPage() {
     c.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         setAuthUserId(user.id);
-        router.replace("/welcome"); // 已登录直接进
-      } else {
-        setChecking(false);
+        // 如果有本地档案 → 自动进；刚切换账号（localStorage 被清空）→ 停住让用户输邮箱
+        if (localStorage.getItem("offerpilot_user_name")) {
+          router.replace("/welcome");
+          return;
+        }
       }
+      setChecking(false);
     });
   }, []);
 

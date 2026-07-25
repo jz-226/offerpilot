@@ -242,13 +242,17 @@ export default function ProfilePage() {
             <div className="px-6 pt-2 pb-4">
               <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2.5">设置</h2>
               <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden divide-y divide-gray-50">
-                <button onClick={() => router.push("/login")}
+                <button onClick={() => {
+                  localStorage.clear();
+                  router.push("/login");
+                }}
                   className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors">
                   <span className="text-sm text-gray-700">切换账号</span>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </button>
                 <button onClick={async () => {
                   if (confirm("确定要退出登录吗？")) {
+                    localStorage.clear();
                     const { createClient } = await import("@/lib/supabase/client");
                     await createClient().auth.signOut();
                     window.location.href = "/login";
