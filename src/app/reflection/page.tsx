@@ -144,9 +144,7 @@ export default function ReflectionPage() {
       </div>
 
       {/* Bottom Nav */}
-      <div className="mt-auto pt-3 pb-2 safe-bottom">
-        <div className="px-6 pb-2">
-        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-2 pt-2 pb-5 safe-bottom flex items-center justify-around z-40">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-2 pt-2 pb-5 safe-bottom flex items-center justify-around z-40">
           {[
             { label: "首页", route: "/dashboard" },
             { label: "路线", route: "/roadmap" },
@@ -167,7 +165,6 @@ export default function ReflectionPage() {
             </button>
           ))}
         </nav>
-      </div>
     </main>
   );
 }
