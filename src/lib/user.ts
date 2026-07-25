@@ -14,23 +14,38 @@ export function clearAuthUser() {
   _authEmail = null;
 }
 
-// 同步读——用于所有 Supabase 查询
+// 同步读——优先模块缓存，AuthSync 注入
+// 注意：页面首次渲染时 AuthSync 还未执行，可能返回 "unauth"
+// 所有页面 useEffect 中会重新通过 supabase.auth.getUser() 获取正确 ID
 export function getUserId(): string {
   if (typeof window === "undefined") return "server";
   if (_authUserId) return _authUserId;
-  // 兜底：从 session cookie 重建
+  return "unauth";
+}
+
+// 异步获取——页面需要真实 user_id 时用
+export async function fetchUserId(): Promise<string> {
+  if (_authUserId) return _authUserId;
+  try {
+    const { createClient } = await import("@/lib/supabase/client");
+    const { data: { user } } = await createClient().auth.getUser();
+    if (user) {
+      setAuthUser(user.id, user.email);
+      return user.id;
+    }
+  } catch {}
   return "unauth";
 }
 
 export function getUserEmail(): string { return _authEmail || ""; }
 
-// ===== 用户名（轻量，存 localStorage 用于问候语） =====
-const NAME_KEY = "offerpilot_user_name";
-export function getUserName(): string {
-  if (typeof window === "undefined") return "";
-  return localStorage.getItem(NAME_KEY) || "";
-}
-export function setUserName(name: string) { localStorage.setItem(NAME_KEY, name); }
+// ===== 用户 Profile —— Supabase user_profiles 表 =====
+let _profileNickname = "";
+export function setProfileNickname(n: string) { _profileNickname = n; }
+export function getProfileNickname(): string { return _profileNickname; }
+// 向后兼容 Dashboard 等页
+export function getUserName(): string { return _profileNickname; }
+export function setUserName(name: string) { _profileNickname = name; }
 
 // ===== 当前选中的目标档案 =====
 const GOAL_KEY = "offerpilot_active_goal";
