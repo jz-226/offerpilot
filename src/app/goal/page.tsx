@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createUserGoal } from "@/lib/supabase/service";
-import { getUserId, saveProfile, createNewProfile, getProfiles, setActiveGoalId } from "@/lib/user";
+import { getUserId, setActiveGoalId } from "@/lib/user";
 
 const roleCategories = [
   {
@@ -98,7 +98,6 @@ export default function GoalPage() {
         salary_range: salary,
       });
       if (goal?.id) setActiveGoalId(goal.id);
-      saveProfile(selectedRole, city);
       router.push("/assessment");
     } catch (err: any) {
       console.error("保存目标失败:", err?.message || err);

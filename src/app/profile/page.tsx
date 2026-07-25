@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getLatestAnalysis, getLatestGoal, getRecentActivity, getTodayQuizGain } from "@/lib/supabase/service";
 import { supabase } from "@/lib/supabase/client";
-import { getUserId, getProfiles, switchProfile, createNewProfile, getUserName } from "@/lib/user";
+import { getUserId, getUserName, setActiveGoalId } from "@/lib/user";
 import { getMilestone, getNextMilestone } from "@/lib/milestone";
 
 const navItems = [
@@ -51,7 +51,7 @@ export default function ProfilePage() {
   const [abilities, setAbilities] = useState<{ name: string; value: number }[]>([]);
   const [records, setRecords] = useState<any[]>([]);
   const [expanded, setExpanded] = useState<number | null>(null);
-  const [profiles, setProfiles] = useState(getProfiles());
+  const [profiles, setProfiles] = useState<{ id: string; role: string; city: string; createdAt: string }[]>([]);
   const [displayName, setDisplayName] = useState("");
   const uid = getUserId();
 
@@ -67,6 +67,9 @@ export default function ProfilePage() {
       supabase.from("reflections").select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(5),
     ]).then(([analysis, goal, dates, _gain, { count }, { data: quizData }, { data: reflData }]) => {
       if (goal) { setTargetRole(goal.target_role); setTargetCity(goal.target_city); setDeadline(goal.deadline); }
+      // 从 Supabase 读取用户的所有目标
+      supabase.from("user_goals").select("*").eq("user_id", uid).order("created_at", { ascending: false })
+        .then(({ data }: any) => { if (data) setProfiles(data.map((g: any) => ({ id: String(g.id), role: g.target_role, city: g.target_city, createdAt: g.created_at }))); });
       if (analysis?.ability_scores?.length) {
         setHasData(true);
         setReadiness(calcReadiness(analysis.ability_scores));
@@ -115,7 +118,7 @@ export default function ProfilePage() {
               return (
                 <div key={p.id} className="relative">
                   <button
-                    onClick={() => { if (!isActive) switchProfile(p.id); }}
+                    onClick={() => { setActiveGoalId(Number(p.id)); router.push("/dashboard"); }}
                     className={`w-full text-left bg-white rounded-2xl border p-4 pr-12 transition-all ${isActive ? "border-blue-200 shadow-sm shadow-blue-50" : "border-gray-100 hover:border-gray-200"}`}>
                     <div className="flex items-center justify-between">
                       <div>
@@ -139,8 +142,7 @@ export default function ProfilePage() {
             })}
           </div>
           <button onClick={() => {
-            if (confirm("确定要新增一个岗位档案吗？当前档案会保留，可以随时切换回来。")) {
-              createNewProfile();
+            if (confirm("确定要新增一个岗位档案吗？")) {
               router.push("/goal");
             }
           }}

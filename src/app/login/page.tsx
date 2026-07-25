@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { setAuthUserId, addSavedAccount, getSavedAccounts, removeSavedAccount, getUserName } from "@/lib/user";
+import { setAuthUser, addSavedAccount, getSavedAccounts, removeSavedAccount, getUserName } from "@/lib/user";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,7 +18,7 @@ export default function LoginPage() {
   useEffect(() => {
     const c = createClient();
     c.auth.getUser().then(({ data: { user } }) => {
-      if (user) setAuthUserId(user.id);
+      if (user) setAuthUser(user.id);
       setChecking(false);
       // 不再自动跳转——让用户看到账号列表和登录选项
     });
@@ -51,7 +51,7 @@ export default function LoginPage() {
       const data = await res.json();
       if (data.error) { setError(data.error); setLoading(false); return; }
       if (data.user?.id) {
-        setAuthUserId(data.user.id);
+        setAuthUser(data.user.id);
         addSavedAccount(email, getUserName() || email.split("@")[0]);
       }
       router.push("/welcome");
