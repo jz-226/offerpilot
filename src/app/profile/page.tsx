@@ -53,6 +53,8 @@ export default function ProfilePage() {
   const [expanded, setExpanded] = useState<number | null>(null);
   const [profiles, setProfiles] = useState<{ id: string; role: string; city: string; createdAt: string }[]>([]);
   const [displayName, setDisplayName] = useState("");
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState("");
   const uid = getUserId();
 
   useEffect(() => {
@@ -106,17 +108,26 @@ export default function ProfilePage() {
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="white" strokeWidth="2" /><path d="M4 20C4 16 8 14 12 14C16 14 20 16 20 20" stroke="white" strokeWidth="2" strokeLinecap="round" /></svg>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900" onClick={async () => {
-                const n = prompt("修改昵称", getProfileNickname());
-                if (n && n.trim()) {
-                  setUserName(n.trim());
-                  setDisplayName(n.trim());
-                  const { data: { user } } = await createClient().auth.getUser();
-                  if (user) {
-                    await supabase.from("user_profiles").upsert({ user_id: user.id, nickname: n.trim() }, { onConflict: "user_id" });
-                  }
-                }
-              }}>{getProfileNickname() || "未设置"}</h1>
+              {editingName ? (
+                <div className="flex items-center gap-2">
+                  <input value={nameInput} onChange={(e) => setNameInput(e.target.value)}
+                    className="text-xl font-bold text-gray-900 bg-white border border-gray-200 rounded-xl px-3 py-1 w-40 focus:outline-none focus:border-blue-300"
+                    autoFocus onKeyDown={async (e) => {
+                      if (e.key === "Enter" && nameInput.trim()) {
+                        setUserName(nameInput.trim()); setDisplayName(nameInput.trim());
+                        const { data: { user } } = await createClient().auth.getUser();
+                        if (user) await supabase.from("user_profiles").upsert({ user_id: user.id, nickname: nameInput.trim() }, { onConflict: "user_id" });
+                        setEditingName(false);
+                      }
+                      if (e.key === "Escape") setEditingName(false);
+                    }} />
+                  <button onClick={() => setEditingName(false)} className="text-gray-300 text-sm">取消</button>
+                </div>
+              ) : (
+                <h1 className="text-xl font-bold text-gray-900" onClick={() => { setNameInput(getProfileNickname()); setEditingName(true); }}>
+                  {getProfileNickname() || "未设置"} <span className="text-gray-300 text-sm font-normal">✎</span>
+                </h1>
+              )}
               <p className="text-sm text-gray-400">{targetRole || "未设置目标"}</p>
             </div>
           </div>
