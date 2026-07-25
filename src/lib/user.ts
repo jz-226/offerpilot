@@ -18,6 +18,27 @@ export function setAuthUserId(uid: string) {
   localStorage.setItem(ACTIVE_KEY, uid);
 }
 
+// ===== 多账号记忆 =====
+const ACCOUNTS_KEY = "offerpilot_accounts";
+
+export function addSavedAccount(email: string, name: string) {
+  const accounts = getSavedAccounts();
+  const existing = accounts.find((a) => a.email === email);
+  if (existing) { existing.name = name; existing.lastLogin = Date.now(); }
+  else { accounts.push({ email, name, lastLogin: Date.now() }); }
+  localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
+}
+
+export function getSavedAccounts(): { email: string; name: string; lastLogin: number }[] {
+  try { return JSON.parse(localStorage.getItem(ACCOUNTS_KEY) || "[]"); }
+  catch { return []; }
+}
+
+export function removeSavedAccount(email: string) {
+  const accounts = getSavedAccounts().filter((a) => a.email !== email);
+  localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
+}
+
 // 当前选中的目标档案
 const GOAL_KEY = "offerpilot_active_goal";
 export function setActiveGoalId(id: number) { localStorage.setItem(GOAL_KEY, String(id)); }
