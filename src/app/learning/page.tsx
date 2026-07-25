@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getLatestAnalysis, getLatestGoal, saveQuizResult, canRetakeQuiz, updateAbilityScore, getCurrentStage } from "@/lib/supabase/service";
-import { getUserId } from "@/lib/user";
+import { getUserId, getActiveGoalId } from "@/lib/user";
 import { getMilestone, getNextMilestone, getMilestoneGap } from "@/lib/milestone";
 
 function genResources(targetRole: string, weakDims: string[], stageName: string) {
@@ -81,6 +81,7 @@ export default function LearningPage() {
   const [scoreSnapshot, setScoreSnapshot] = useState<Record<string, number>>({});
 
   useEffect(() => {
+    console.log("Learning: goalId=", getActiveGoalId());
     Promise.all([getLatestAnalysis(), getLatestGoal()]).then(([a, g]) => {
       if (g) setTargetRole(g.target_role);
       if (a?.ability_scores?.length) {

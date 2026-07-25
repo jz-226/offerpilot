@@ -61,7 +61,8 @@ export default function GrowthPage() {
   };
 
   useEffect(() => {
-    const goalId = getActiveGoalId() || 0;
+    const goalId = getActiveGoalId();
+    console.log("Growth: goalId=", goalId);
     Promise.all([
       getLatestAnalysis(),
       getTodayQuizGain(),

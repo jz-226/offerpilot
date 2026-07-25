@@ -59,15 +59,19 @@ export default function ProfilePage() {
 
   useEffect(() => {
     setDisplayName(getUserName());
+    const goalId = getActiveGoalId();
+    console.log("Profile: user=", uid, " goal=", goalId);
     Promise.all([
       getLatestAnalysis(),
-      getLatestGoal(),
+      // 用 activeGoalId 查目标，不是最新目标
+      goalId ? supabase.from("user_goals").select("*").eq("id", goalId).maybeSingle() : Promise.resolve(null),
       getRecentActivity(),
       getTodayQuizGain(),
       supabase.from("quiz_results").select("*", { count: "exact", head: true }).eq("user_id", uid),
       supabase.from("quiz_results").select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(5),
       supabase.from("reflections").select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(5),
-    ]).then(([analysis, goal, dates, _gain, { count }, { data: quizData }, { data: reflData }]) => {
+    ]).then(([analysis, goalResult, dates, _gain, { count }, { data: quizData }, { data: reflData }]) => {
+      const goal = (goalResult as any)?.data || goalResult;
       if (goal) { setTargetRole(goal.target_role); setTargetCity(goal.target_city); setDeadline(goal.deadline); }
       // 从 Supabase 读取用户的所有目标
       supabase.from("user_goals").select("*").eq("user_id", uid).order("created_at", { ascending: false })
