@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getLatestAnalysis, getLatestGoal, getRecentActivity, getTodayQuizGain } from "@/lib/supabase/service";
 import { supabase, createClient } from "@/lib/supabase/client";
-import { getUserId, getUserName, setActiveGoalId, setUserName, getProfileNickname } from "@/lib/user";
+import { getUserId, getUserName, setActiveGoalId, setUserName, getProfileNickname, getActiveGoalId } from "@/lib/user";
 import { getMilestone, getNextMilestone } from "@/lib/milestone";
 
 const navItems = [
