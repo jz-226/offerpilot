@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getLatestAnalysis, getRecentActivity, getTodayQuizGain } from "@/lib/supabase/service";
 import { supabase } from "@/lib/supabase/client";
-import { getUserId } from "@/lib/user";
+import { getUserId, getActiveGoalId } from "@/lib/user";
 import { getMilestone, getNextMilestone } from "@/lib/milestone";
 
 const navItems = [
@@ -66,11 +66,11 @@ export default function GrowthPage() {
       getTodayQuizGain(),
       getRecentActivity(),
       // 总测验次数
-      supabase.from("quiz_results").select("*", { count: "exact" }).eq("user_id", getUserId()),
+      supabase.from("quiz_results").select("*", { count: "exact" }).eq("user_id", getUserId()).eq("goal_id", goalId),
       // 最近 10 条测验记录
-      supabase.from("quiz_results").select("*").eq("user_id", getUserId()).order("created_at", { ascending: false }).limit(10),
+      supabase.from("quiz_results").select("*").eq("user_id", getUserId()).eq("goal_id", goalId).order("created_at", { ascending: false }).limit(10),
       // 反思记录
-      supabase.from("reflections").select("*").eq("user_id", getUserId()).order("created_at", { ascending: false }).limit(10),
+      supabase.from("reflections").select("*").eq("user_id", getUserId()).eq("goal_id", goalId).order("created_at", { ascending: false }).limit(10),
     ]).then(([analysis, gain, dates, { count }, { data: quizData }, { data: reflectionData }]) => {
       // 能力维度
       if (analysis?.ability_scores?.length) {

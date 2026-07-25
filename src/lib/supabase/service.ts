@@ -202,9 +202,10 @@ export interface QuizResult {
 }
 
 export async function saveQuizResult(result: Omit<QuizResult, "id" | "created_at">) {
+  const goalId = getActiveGoalId() || 0;
   const { data, error } = await supabase
     .from("quiz_results")
-    .insert(result)
+    .insert({ ...result, goal_id: goalId })
     .select()
     .single();
   if (error) throw error;

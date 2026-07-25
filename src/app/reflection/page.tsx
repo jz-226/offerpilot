@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getLatestAnalysis, getLatestGoal } from "@/lib/supabase/service";
 import { supabase } from "@/lib/supabase/client";
-import { getUserId } from "@/lib/user";
+import { getUserId, getActiveGoalId } from "@/lib/user";
 
 export default function ReflectionPage() {
   const router = useRouter();
@@ -132,7 +132,7 @@ export default function ReflectionPage() {
             {/* 提交按钮 */}
             <button onClick={async () => {
                 if (note.trim()) {
-                  await supabase.from("reflections").insert({ user_id: getUserId(), note, summary });
+                  await supabase.from("reflections").insert({ user_id: getUserId(), goal_id: getActiveGoalId() || 0, note, summary });
                 }
                 router.push("/dashboard");
               }}
