@@ -49,10 +49,24 @@ export function setUserName(name: string) { _profileNickname = name; }
 
 // ===== 当前选中的目标档案 =====
 const GOAL_KEY = "offerpilot_active_goal";
-export function setActiveGoalId(id: number) { localStorage.setItem(GOAL_KEY, String(id)); }
+let _activeGoalId: number | null = parseInt(localStorage.getItem(GOAL_KEY) || "0") || null;
+
+export function setActiveGoalId(id: number) {
+  _activeGoalId = id;
+  localStorage.setItem(GOAL_KEY, String(id));
+  // 同步到 Supabase
+  if (_authUserId && typeof window !== "undefined") {
+    import("@/lib/supabase/client").then(({ createClient }) => {
+      createClient().from("user_profiles").upsert({ user_id: _authUserId, active_goal_id: id }, { onConflict: "user_id" }).then(() => {});
+    });
+  }
+}
+
 export function getActiveGoalId(): number | null {
+  if (_activeGoalId) return _activeGoalId;
   const v = localStorage.getItem(GOAL_KEY);
-  return v ? Number(v) : null;
+  _activeGoalId = v ? Number(v) : null;
+  return _activeGoalId;
 }
 
 // ===== 记忆账号（纯展示用） =====

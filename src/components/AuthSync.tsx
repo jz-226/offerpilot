@@ -23,6 +23,10 @@ export default function AuthSync() {
         setProfileNickname(nick);
       } else {
         setProfileNickname(profile.nickname || "User");
+        // 恢复上次激活的 goal
+        if (profile.active_goal_id) {
+          localStorage.setItem("offerpilot_active_goal", String(profile.active_goal_id));
+        }
       }
     });
   }, []);
