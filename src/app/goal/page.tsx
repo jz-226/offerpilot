@@ -75,13 +75,20 @@ export default function GoalPage() {
   const [showPicker, setShowPicker] = useState(false);
 
   const handleSubmit = async () => {
+    // 检查重复
+    const supabase = (await import("@/lib/supabase/client")).createClient();
+    const { data: existingRole } = await supabase
+      .from("user_goals")
+      .select("id").eq("user_id", getUserId())
+      .eq("target_role", selectedRole)
+      .maybeSingle();
+    if (existingRole) {
+      alert(`你已有「${selectedRole}」岗位，不能重复创建。`);
+      return;
+    }
+
     setSaving(true);
     try {
-      // 如果已有档案，新建一个隔离的新档案
-      const existing = getProfiles();
-      if (existing.length > 0) {
-        createNewProfile();
-      }
       const goal = await createUserGoal({
         user_id: getUserId(),
         target_role: selectedRole,
