@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createUserGoal } from "@/lib/supabase/service";
-import { getUserId, saveProfile, createNewProfile, getProfiles } from "@/lib/user";
+import { getUserId, saveProfile, createNewProfile, getProfiles, setActiveGoalId } from "@/lib/user";
 
 const roleCategories = [
   {
@@ -82,7 +82,7 @@ export default function GoalPage() {
       if (existing.length > 0) {
         createNewProfile();
       }
-      await createUserGoal({
+      const goal = await createUserGoal({
         user_id: getUserId(),
         target_role: selectedRole,
         target_city: city,
@@ -90,6 +90,7 @@ export default function GoalPage() {
         deadline,
         salary_range: salary,
       });
+      if (goal?.id) setActiveGoalId(goal.id);
       saveProfile(selectedRole, city);
       router.push("/assessment");
     } catch (err: any) {

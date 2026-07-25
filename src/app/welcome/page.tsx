@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { setUserName, getUserName } from "@/lib/user";
+import { setUserName, getUserName, setActiveGoalId } from "@/lib/user";
 import { createClient } from "@/lib/supabase/client";
 
 export default function WelcomePage() {
@@ -61,7 +61,7 @@ export default function WelcomePage() {
           <div className="space-y-2 mb-4 text-left">
             {goals.map((g) => (
               <div key={g.id} className="relative">
-                <button onClick={() => router.push("/dashboard")}
+                <button onClick={() => { setActiveGoalId(g.id); router.push("/dashboard"); }}
                   className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 pr-12 text-left hover:border-blue-200 active:scale-[0.99] transition-all">
                   <div className="flex items-center justify-between">
                     <div>

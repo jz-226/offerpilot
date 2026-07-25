@@ -18,6 +18,14 @@ export function setAuthUserId(uid: string) {
   localStorage.setItem(ACTIVE_KEY, uid);
 }
 
+// 当前选中的目标档案
+const GOAL_KEY = "offerpilot_active_goal";
+export function setActiveGoalId(id: number) { localStorage.setItem(GOAL_KEY, String(id)); }
+export function getActiveGoalId(): number | null {
+  const v = localStorage.getItem(GOAL_KEY);
+  return v ? Number(v) : null;
+}
+
 export function getUserName(): string {
   if (typeof window === "undefined") return "";
   return localStorage.getItem(NAME_KEY) || "";

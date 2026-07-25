@@ -1,5 +1,5 @@
 import { createClient } from "./client";
-import { getUserId } from "@/lib/user";
+import { getUserId, getActiveGoalId } from "@/lib/user";
 
 const supabase = typeof window !== "undefined" ? createClient() : createClient(); // always use browser client
 
@@ -139,15 +139,23 @@ export async function saveAnalysis(analysis: Omit<AIAnalysis, "id" | "created_at
 }
 
 export async function getLatestAnalysis() {
-  // 先找最新目标
-  const goal = await getLatestGoal();
-  if (!goal) return null;
+  // 优先用用户选中的目标，回退到最新目标
+  const activeGoalId = getActiveGoalId();
+  let goalId: number | undefined;
 
-  // 再找该目标关联的分析
+  if (activeGoalId) {
+    goalId = activeGoalId;
+  } else {
+    const goal = await getLatestGoal();
+    goalId = goal?.id;
+  }
+
+  if (!goalId) return null;
+
   const { data, error } = await supabase
     .from("ai_analysis")
     .select("*")
-    .eq("goal_id", goal.id)
+    .eq("goal_id", goalId)
     .order("created_at", { ascending: false })
     .limit(1)
     .single();
