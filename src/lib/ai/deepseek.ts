@@ -20,7 +20,8 @@ export async function chat(messages: DeepSeekMessage[], options?: { temperature?
       messages,
       temperature: options?.temperature ?? 0.3,
       max_tokens: options?.max_tokens ?? 2048,
-      ...(options?.json !== false ? { response_format: { type: "json_object" } } : {}),
+      // DeepSeek v4 不强制 json_object，让 prompt 自己控制输出格式
+      ...(options?.json === true ? { response_format: { type: "json_object" } } : {}),
     }),
   });
 
