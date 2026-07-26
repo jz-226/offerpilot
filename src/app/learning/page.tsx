@@ -146,12 +146,23 @@ export default function LearningPage() {
 
     setQuizLocked(false); setCurrentResource(resourceName); setQuizOpen(true); setQuizLoading(true); setQuizResult(null); setSelectedAnswers({});
     try {
-      const res = await fetch("/api/quiz", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ resourceName, resourceType: "文档", targetRole, dimensions }) });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setQuizQuestions(data.questions);
-    } catch (e: any) { alert("生成题目失败: " + (e?.message || "请稍后重试")); setQuizOpen(false); }
-    finally { setQuizLoading(false); }
+      // 1. 创建异步任务
+      const startRes = await fetch("/api/quiz/start", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ resourceName, resourceType: "文档", targetRole, dimensions }) });
+      const { taskId, error: startErr } = await startRes.json();
+      if (startErr || !taskId) throw new Error(startErr || "无法创建任务");
+
+      // 2. 轮询（每次调 status 是新 Serverless 函数，Vercel 上会自动重试）
+      let retries = 0;
+      const poll = async (): Promise<void> => {
+        if (retries >= 5) { setQuizLoading(false); alert("生成超时，请关闭后重试"); return; }
+        const statusRes = await fetch(`/api/quiz/status?taskId=${taskId}`);
+        const data = await statusRes.json();
+        if (data.status === "completed") { setQuizQuestions(data.questions); setQuizLoading(false); }
+        else if (data.status === "failed") { retries++; setTimeout(() => poll(), 500); }
+        else { setTimeout(() => poll(), 2000); }
+      };
+      poll();
+    } catch (e: any) { alert("生成题目失败: " + (e?.message || "请稍后重试")); setQuizOpen(false); setQuizLoading(false); }
   };
 
   const submitQuiz = async () => {
