@@ -2,7 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getLatestAnalysis, getLatestGoal, type AIAnalysis } from "@/lib/supabase/service";
+import { getLatestAnalysis, type AIAnalysis } from "@/lib/supabase/service";
+import { getActiveGoalId } from "@/lib/user";
+import { supabase } from "@/lib/supabase/client";
 
 const navItems = [
   { label: "首页", icon: "home", route: "/dashboard", active: false },
@@ -104,8 +106,11 @@ export default function RoadmapPage() {
   const [userTime, setUserTime] = useState<number>(6);
 
   useEffect(() => {
-    Promise.all([getLatestAnalysis(), getLatestGoal()]).then(([a, g]) => {
+    const goalId = getActiveGoalId();
+    const goalPromise = goalId ? supabase.from("user_goals").select("*").eq("id", goalId).maybeSingle() : Promise.resolve(null);
+    Promise.all([getLatestAnalysis(), goalPromise]).then(([a, goalData]) => {
       setAnalysis(a);
+      const g = (goalData as any)?.data || goalData;
       if (g) setGoal({ target_role: g.target_role, target_city: g.target_city, deadline: g.deadline });
       // 计算 AI 原始路线总月数
       if (a?.roadmap?.length) {

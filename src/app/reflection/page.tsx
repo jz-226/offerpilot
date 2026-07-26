@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getLatestAnalysis, getLatestGoal } from "@/lib/supabase/service";
+import { getLatestAnalysis } from "@/lib/supabase/service";
 import { supabase } from "@/lib/supabase/client";
 import { getUserId, getActiveGoalId } from "@/lib/user";
 
@@ -17,7 +17,10 @@ export default function ReflectionPage() {
   const [summarizing, setSummarizing] = useState(false);
 
   useEffect(() => {
-    Promise.all([getLatestAnalysis(), getLatestGoal()]).then(([a, g]) => {
+    const goalId = getActiveGoalId();
+    const goalPromise = goalId ? supabase.from("user_goals").select("target_role").eq("id", goalId).maybeSingle() : Promise.resolve(null);
+    Promise.all([getLatestAnalysis(), goalPromise]).then(([a, goalData]) => {
+      const g = (goalData as any)?.data || goalData;
       if (g) setTargetRole(g.target_role);
       if (a) {
         setNextAction(a.next_action || "");

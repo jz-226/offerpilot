@@ -139,23 +139,14 @@ export async function saveAnalysis(analysis: Omit<AIAnalysis, "id" | "created_at
 }
 
 export async function getLatestAnalysis() {
-  // 优先用用户选中的目标，回退到最新目标
+  // active_goal_id 为唯一来源，不兜底
   const activeGoalId = getActiveGoalId();
-  let goalId: number | undefined;
-
-  if (activeGoalId) {
-    goalId = activeGoalId;
-  } else {
-    const goal = await getLatestGoal();
-    goalId = goal?.id;
-  }
-
-  if (!goalId) return null;
+  if (!activeGoalId) return null;
 
   const { data, error } = await supabase
     .from("ai_analysis")
     .select("*")
-    .eq("goal_id", goalId)
+    .eq("goal_id", activeGoalId)
     .order("created_at", { ascending: false })
     .limit(1)
     .single();

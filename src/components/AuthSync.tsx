@@ -24,12 +24,15 @@ export default function AuthSync() {
       } else {
         setProfileNickname(profile.nickname || "User");
 
-        // 如果没有选中任何目标，自动选第一个
+        // 如果没有选中任何目标
         if (!localStorage.getItem("offerpilot_active_goal")) {
-          const { data: goals } = await c.from("user_goals").select("id").eq("user_id", user.id).order("created_at", { ascending: true }).limit(1);
-          if (goals?.length) {
+          const { data: goals, count } = await c.from("user_goals").select("id", { count: "exact" }).eq("user_id", user.id);
+          if (!goals?.length) return; // 无目标，等用户创建
+          if (count === 1) {
+            // 只有一个目标 → 自动激活
             localStorage.setItem("offerpilot_active_goal", String(goals[0].id));
           }
+          // 多个目标 → 不静默选择，用户到 Welcome 选
         }
       }
     });
