@@ -61,7 +61,7 @@ export async function POST(req: Request) {
     const raw = await chat([
       { role: "system", content: QUIZ_PROMPT },
       { role: "user", content: userPrompt },
-    ], { timeout: 15000, retries: 1, max_tokens: 1024 });
+    ], { timeout: 25000, retries: 0, max_tokens: 1024 });
     const t2 = Date.now();
     console.log(`[Quiz] STEP 3 DeepSeek done in ${t2 - t1}ms, response=${raw?.length || 0} chars, first200="${raw?.slice(0, 200)}"`);
 
