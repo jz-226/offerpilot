@@ -143,7 +143,7 @@ export default function DashboardPage() {
             {(() => {
               const h = new Date().getHours();
               const greeting = h < 6 ? "凌晨好" : h < 12 ? "早上好" : h < 14 ? "中午好" : h < 18 ? "下午好" : "晚上好";
-              return <>{greeting}{userName ? `，${userName}` : ""} <span className="inline-block animate-pulse">👋</span></>;
+              return <>{greeting}{userName ? `，${userName}` : ""} 👋</>;
             })()}
           </h1>
           <p className="text-gray-400 text-sm mt-1">
@@ -350,7 +350,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Bottom Nav — 固定底部 */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-2 pt-2 pb-5 safe-bottom flex items-center justify-around">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-2 pt-2 pb-5 safe-bottom flex items-center justify-around will-change-transform">
         {navItems.map((item) => (
           <button
             key={item.label}
