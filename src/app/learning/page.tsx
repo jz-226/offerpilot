@@ -80,6 +80,7 @@ export default function LearningPage() {
   const [explanations, setExplanations] = useState<Record<number, string>>({});
   const [explainLoading, setExplainLoading] = useState(false);
   const [scoreSnapshot, setScoreSnapshot] = useState<Record<string, number>>({});
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const goalId = getActiveGoalId();
@@ -166,6 +167,8 @@ export default function LearningPage() {
   };
 
   const submitQuiz = async () => {
+    if (submitting) return; // 防重复提交
+    setSubmitting(true);
     const correct = quizQuestions.filter((q) => { const sel = selectedAnswers[q.id]; return q.type === "judge" ? sel === q.answer : String(sel) === String(q.answer); }).length;
     const total = quizQuestions.length;
     const pct = Math.round((correct / total) * 100);
@@ -387,7 +390,7 @@ export default function LearningPage() {
               )}
             </div>
             {!quizLoading && !quizResult && (
-              <div className="px-5 py-3 border-t border-gray-100"><button onClick={submitQuiz} disabled={Object.keys(selectedAnswers).length < quizQuestions.length} className="w-full py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold text-sm rounded-2xl transition-all">提交测验 ({Object.keys(selectedAnswers).length}/{quizQuestions.length})</button></div>
+              <div className="px-5 py-3 border-t border-gray-100"><button onClick={submitQuiz} disabled={submitting || Object.keys(selectedAnswers).length < quizQuestions.length} className="w-full py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold text-sm rounded-2xl transition-all">{submitting ? "提交中..." : `提交测验 (${Object.keys(selectedAnswers).length}/${quizQuestions.length})`}</button></div>
             )}
           </div>
         </div>
