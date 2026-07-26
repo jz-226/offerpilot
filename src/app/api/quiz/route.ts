@@ -1,40 +1,17 @@
 import { NextResponse } from "next/server";
 import { chat } from "@/lib/ai/deepseek";
 
-const QUIZ_PROMPT = `你是一个技术测验出题官。根据用户正在学习的内容，生成 5 道测验题。
+const QUIZ_PROMPT = `你是测验出题官。只输出 JSON，不要任何解释或推理过程。输出格式：
 
-难度分布：2 道简单、1 道中等、2 道较难。
-题型：单选题或判断题。
+{"questions":[
+  {"id":1,"type":"choice","difficulty":"easy","question":"题目","options":["A. 选项1","B. 选项2","C. 选项3","D. 选项4"],"answer":"B","dimension":"维度名"},
+  {"id":2,"type":"judge","difficulty":"easy","question":"题目","answer":true,"dimension":"维度名"},
+  {"id":3,"type":"choice","difficulty":"medium","question":"题目","options":["A. 1","B. 2","C. 3","D. 4"],"answer":"B","dimension":"维度名"},
+  {"id":4,"type":"choice","difficulty":"hard","question":"题目","options":["A. 1","B. 2","C. 3","D. 4"],"answer":"B","dimension":"维度名"},
+  {"id":5,"type":"judge","difficulty":"hard","question":"题目","answer":false,"dimension":"维度名"}
+]}
 
-输出严格 JSON：
-{
-  "questions": [
-    {
-      "id": 1,
-      "type": "choice",
-      "difficulty": "easy",
-      "question": "题目内容",
-      "options": ["A. 选项1", "B. 选项2", "C. 选项3", "D. 选项4"],
-      "answer": "B",
-      "dimension": "关联的能力维度名称"
-    },
-    {
-      "id": 2,
-      "type": "judge",
-      "difficulty": "easy",
-      "question": "题目内容",
-      "answer": true,
-      "dimension": "关联的能力维度名称"
-    }
-  ]
-}
-
-要求：
-- 题目必须跟用户正在学的具体内容直接相关，不能是泛泛的入门题
-- 选项之间的错误选项要有迷惑性
-- 判断题的 answer 是 true 或 false
-- 每道题绑定一个能力维度 dimension，从用户的目标岗位能力维度中选择
-- 里面必须包含 json 这个单词`;
+要求：2简单1中等2较难。不要解释，直接输出 json。`;
 
 export async function POST(req: Request) {
   const t0 = Date.now();
@@ -61,7 +38,7 @@ export async function POST(req: Request) {
     const raw = await chat([
       { role: "system", content: QUIZ_PROMPT },
       { role: "user", content: userPrompt },
-    ], { timeout: 25000, retries: 0, max_tokens: 1024 });
+    ], { timeout: 60000, retries: 0, max_tokens: 2048 });
     const t2 = Date.now();
     console.log(`[Quiz] STEP 3 DeepSeek done in ${t2 - t1}ms, response=${raw?.length || 0} chars, first200="${raw?.slice(0, 200)}"`);
 
@@ -83,10 +60,23 @@ export async function POST(req: Request) {
       cleaned = cleaned.replace(/,(\s*[}\]])/g, "$1");
       try {
         parsed = JSON.parse(cleaned);
-        console.log(`[Quiz] STEP 4 JSON parse OK after cleanup in ${Date.now() - t3}ms`);
-      } catch (e: any) {
-        console.error(`[Quiz] STEP 4 JSON parse FAILED raw="${raw?.slice(0, 500)}"`);
-        throw new Error("AI 返回格式异常，请重试");
+        console.log(`[Quiz] STEP 4 JSON parse OK after cleanup`);
+      } catch (e2: any) {
+        console.error(`[Quiz] PARSE FAILED raw="${raw?.slice(0, 300)}"`);
+        console.error(`[Quiz] PARSE FAILED cleaned="${cleaned?.slice(0, 300)}"`);
+        // 最后手段：尝试用正则提取 questions 数组
+        const qMatch = raw.match(/\{[^}]*"questions"\s*:\s*\[([\s\S]*)\]\s*\}/);
+        if (qMatch) {
+          try {
+            const fixed = '{"questions":[' + qMatch[1] + ']}';
+            parsed = JSON.parse(fixed);
+            console.log(`[Quiz] STEP 4 JSON parse OK via regex extraction`);
+          } catch {
+            throw new Error("Parse failed: " + (raw || "empty").slice(0, 150));
+          }
+        } else {
+          throw new Error("Parse failed: " + (raw || "empty").slice(0, 150));
+        }
       }
     }
 

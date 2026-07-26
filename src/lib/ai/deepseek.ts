@@ -44,8 +44,19 @@ async function _call(messages: DeepSeekMessage[], options?: ChatOptions) {
     }
 
     const data = await res.json();
+    console.log(`[DeepSeek] raw response keys: ${Object.keys(data).join(",")}`);
+    if (data?.choices?.[0]) {
+      console.log(`[DeepSeek] choice keys: ${Object.keys(data.choices[0]).join(",")}`);
+      console.log(`[DeepSeek] message type: ${typeof data.choices[0].message}, has content: ${!!data.choices[0].message?.content}, has reasoning: ${!!data.choices[0].message?.reasoning_content}`);
+    }
     const content = data?.choices?.[0]?.message?.content;
-    if (!content) throw new Error("DeepSeek returned empty response");
+    // DeepSeek V4 有时把回复放在 reasoning_content
+    if (!content) {
+      const reasoning = data?.choices?.[0]?.message?.reasoning_content;
+      if (reasoning) return reasoning;
+      console.error("[DeepSeek] raw data:", JSON.stringify(data).slice(0, 300));
+      throw new Error("DeepSeek returned empty response");
+    }
     return content as string;
   } finally {
     clearTimeout(timeout);
