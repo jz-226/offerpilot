@@ -5,12 +5,21 @@ export interface DeepSeekMessage {
   content: string;
 }
 
-async function _call(messages: DeepSeekMessage[], options?: { temperature?: number; max_tokens?: number; json?: boolean }) {
+interface ChatOptions {
+  temperature?: number;
+  max_tokens?: number;
+  json?: boolean;
+  timeout?: number;   // 单次超时 ms，默认 30s
+  retries?: number;   // 额外重试次数，默认 2（共 3 次）
+}
+
+async function _call(messages: DeepSeekMessage[], options?: ChatOptions) {
   const apiKey = process.env.DEEPSEEK_API_KEY;
   if (!apiKey) throw new Error("DEEPSEEK_API_KEY not configured");
 
+  const timeoutMs = options?.timeout ?? 30000;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const res = await fetch(`${DEEPSEEK_BASE}/chat/completions`, {
@@ -43,16 +52,16 @@ async function _call(messages: DeepSeekMessage[], options?: { temperature?: numb
   }
 }
 
-// 公共接口：最多重试 2 次（共 3 次尝试）
-export async function chat(messages: DeepSeekMessage[], options?: { temperature?: number; max_tokens?: number; json?: boolean }) {
+export async function chat(messages: DeepSeekMessage[], options?: ChatOptions) {
+  const retries = options?.retries ?? 2;
   let lastError: Error | null = null;
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i <= retries; i++) {
     try {
       return await _call(messages, options);
     } catch (err: any) {
       lastError = err;
-      if (i < 2) await new Promise((r) => setTimeout(r, 1000)); // 等 1 秒再试
+      if (i < retries) await new Promise((r) => setTimeout(r, 1000));
     }
   }
-  throw lastError || new Error("DeepSeek call failed after 3 attempts");
+  throw lastError || new Error("DeepSeek call failed");
 }

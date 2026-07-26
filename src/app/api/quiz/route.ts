@@ -53,7 +53,7 @@ export async function POST(req: Request) {
     const raw = await chat([
       { role: "system", content: QUIZ_PROMPT },
       { role: "user", content: userPrompt },
-    ]);
+    ], { timeout: 15000, retries: 1, max_tokens: 1024 });
 
     let parsed: {
       questions: {
