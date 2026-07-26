@@ -131,13 +131,20 @@ ${context}
       roadmap: { stage: string; goal: string; duration: string; reason: string }[];
       nextAction: string;
     };
-    try {
-      parsed = JSON.parse(raw);
-    } catch {
-      let cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-      cleaned = cleaned.replace(/\n/g, " ").replace(/\r/g, "");
-      cleaned = cleaned.replace(/,(\s*[}\]])/g, "$1");
-      parsed = JSON.parse(cleaned);
+    // V4 返回推理+JSON，提取 JSON 部分
+    try { parsed = JSON.parse(raw); } catch {
+      let s = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      const idx = s.lastIndexOf('{"requiredSkills"');
+      if (idx < 0) { const idx2 = s.lastIndexOf('{"abilityScores"'); if (idx2 > 0) s = s.slice(idx2); }
+      else s = s.slice(idx);
+      s = s.replace(/\n/g, " ").replace(/\r/g, "").replace(/,(\s*[}\]])/g, "$1");
+      try { parsed = JSON.parse(s); } catch {
+        // 补全截断
+        let depth = 0; let last = -1;
+        for (let i = 0; i < s.length; i++) { if (s[i]==="{") depth++; if (s[i]==="}") { depth--; if (depth===0) last=i; } }
+        if (last > 10) s = s.slice(0, last+1);
+        parsed = JSON.parse(s);
+      }
     }
 
     // 保存
