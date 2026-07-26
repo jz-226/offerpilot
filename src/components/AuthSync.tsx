@@ -39,11 +39,8 @@ export default function AuthSync() {
         if (!localStorage.getItem("offerpilot_active_goal")) {
           const { data: goals, count } = await c.from("user_goals").select("id", { count: "exact" }).eq("user_id", user.id);
           if (!goals?.length) return; // 无目标，等用户创建
-          if (count === 1) {
-            // 只有一个目标 → 自动激活
-            localStorage.setItem("offerpilot_active_goal", String(goals[0].id));
-          }
-          // 多个目标 → 不静默选择，用户到 Welcome 选
+          // 自动激活第一个目标（无选择时）
+          localStorage.setItem("offerpilot_active_goal", String(goals[0].id));
         }
       }
     });

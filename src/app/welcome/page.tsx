@@ -54,7 +54,7 @@ export default function WelcomePage() {
                     console.log("switch goal clicked", g.id, g.role);
                     alert(`正在切换到：${g.role}`);
                     setActiveGoalId(g.id);
-                    window.location.href = "/dashboard";
+                    router.push("/dashboard");
                   }}
                   className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 pr-12 text-left hover:border-blue-200 active:scale-[0.99] transition-all">
                   <div className="flex items-center justify-between">
