@@ -222,7 +222,7 @@ export default function AssessmentPage() {
         strengths,
         motivation,
       });
-      await fetch("/api/analyze", { method: "POST" });
+      // 分析延迟到 Analysis 页面执行
       router.push("/analysis");
     } catch (err: any) {
       console.error("保存评估失败:", err?.message || err);

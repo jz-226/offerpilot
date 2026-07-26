@@ -15,13 +15,23 @@ export default function AnalysisPage() {
   const router = useRouter();
   const [analysis, setAnalysis] = useState<AIAnalysis | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    getLatestAnalysis().then((data) => {
-      setAnalysis(data);
-      setLoading(false);
-    });
-  }, []);
+  const fetchAnalysis = async () => {
+    setLoading(true); setError(false);
+    // 1. 先查是否已有分析
+    const existing = await getLatestAnalysis();
+    if (existing) { setAnalysis(existing); setLoading(false); return; }
+    // 2. 无缓存 → 调 API 生成
+    try {
+      await fetch("/api/analyze", { method: "POST" });
+      const result = await getLatestAnalysis();
+      if (result) { setAnalysis(result); setLoading(false); return; }
+    } catch {}
+    setError(true); setLoading(false);
+  };
+
+  useEffect(() => { fetchAnalysis(); }, []);
 
   const strengths = analysis?.user_strengths || [];
   const gaps = analysis?.skill_gaps || [];
@@ -58,6 +68,14 @@ export default function AnalysisPage() {
           <div className="flex flex-col items-center gap-3">
             <div className="w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
             <span className="text-sm text-gray-400">AI 正在分析你的目标...</span>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-3xl mb-3">⏳</div>
+            <p className="text-sm text-gray-500 mb-4">AI 分析超时，请重试</p>
+            <button onClick={fetchAnalysis} className="px-6 py-2.5 bg-blue-500 text-white text-sm font-semibold rounded-2xl">重新分析</button>
           </div>
         </div>
       ) : (
