@@ -10,8 +10,11 @@ function randomNickname() {
 
 export default function AuthSync() {
   useEffect(() => {
+    // 缓存：同一次会话内不重复查 Supabase
+    if (sessionStorage.getItem("auth_synced")) return;
     const c = createClient();
     c.auth.getUser().then(async ({ data: { user } }) => {
+      if (user) sessionStorage.setItem("auth_synced", "1");
       if (!user) return;
       setAuthUser(user.id, user.email);
 
