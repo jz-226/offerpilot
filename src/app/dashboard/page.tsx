@@ -354,7 +354,7 @@ export default function DashboardPage() {
         {navItems.map((item) => (
           <button
             key={item.label}
-            onClick={() => { window.location.href = item.route; }}
+            onClick={() => { router.push(item.route); }}
             className={`flex flex-col items-center gap-0.5 px-3 py-1 transition-colors ${
               item.active ? "text-blue-500" : "text-gray-300 hover:text-gray-400"
             }`}

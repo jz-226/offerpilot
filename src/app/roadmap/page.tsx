@@ -311,7 +311,7 @@ export default function RoadmapPage() {
       {/* Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-2 pt-2 pb-5 safe-bottom flex items-center justify-around z-40 will-change-transform">
         {navItems.map((item) => (
-          <button key={item.label} onClick={() => { window.location.href = item.route; }}
+          <button key={item.label} onClick={() => { router.push(item.route); }}
             className={`flex flex-col items-center gap-0.5 px-3 py-1 transition-colors ${item.active ? "text-blue-500" : "text-gray-300 hover:text-gray-400"}`}>
             <NavIcon name={item.icon} active={item.active} />
             <span className="text-[10px] font-medium">{item.label}</span>
