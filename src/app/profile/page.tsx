@@ -67,10 +67,9 @@ export default function ProfilePage() {
       goalId ? supabase.from("user_goals").select("*").eq("id", goalId).maybeSingle() : Promise.resolve(null),
       getRecentActivity(),
       getTodayQuizGain(),
-      supabase.from("quiz_results").select("*", { count: "exact", head: true }).eq("user_id", realUid),
-      supabase.from("quiz_results").select("*").eq("user_id", realUid).order("created_at", { ascending: false }).limit(5),
+      supabase.from("quiz_results").select("*", { count: "exact" }).eq("user_id", realUid).order("created_at", { ascending: false }).limit(5),
       supabase.from("reflections").select("*").eq("user_id", realUid).order("created_at", { ascending: false }).limit(5),
-    ]).then(([analysis, goalResult, dates, _gain, { count }, { data: quizData }, { data: reflData }]) => {
+    ]).then(([analysis, goalResult, dates, _gain, quizResult, { data: reflData }]) => {
       const goal = (goalResult as any)?.data || goalResult;
       if (goal) { setTargetRole(goal.target_role); setTargetCity(goal.target_city); setDeadline(goal.deadline); }
       // 从 Supabase 读取用户的所有目标
@@ -86,11 +85,11 @@ export default function ProfilePage() {
       let s = 0; const today = new Date();
       for (let i = 0; i < 30; i++) { const d = new Date(today); d.setDate(d.getDate() - i); if (daySet.has(`${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`)) s++; else if (i > 0) break; }
       setStreakDays(s);
-      setTotalQuizzes(count || 0);
+      setTotalQuizzes(quizResult?.count || 0);
 
       // 最近记录
       const timeline: any[] = [];
-      (quizData || []).forEach((q: any) => timeline.push({ type: "quiz", title: `完成测验：${q.resource_name}`, time: new Date(q.created_at).toISOString().slice(0, 10), feedback: q.score >= 4 ? "掌握程度较高" : q.score >= 2 ? "有一定理解" : "建议重新学习", detail: `${q.score}/${q.total} 题正确`, ts: new Date(q.created_at).getTime() }));
+      (quizResult?.data || []).forEach((q: any) => timeline.push({ type: "quiz", title: `完成测验：${q.resource_name}`, time: new Date(q.created_at).toISOString().slice(0, 10), feedback: q.score >= 4 ? "掌握程度较高" : q.score >= 2 ? "有一定理解" : "建议重新学习", detail: `${q.score}/${q.total} 题正确`, ts: new Date(q.created_at).getTime() }));
       (reflData || []).forEach((r: any) => timeline.push({ type: "reflection", title: "提交成长总结", time: new Date(r.created_at).toISOString().slice(0, 10), feedback: r.summary || "记录了今日心得", detail: r.note?.slice(0, 100) || "", ts: new Date(r.created_at).getTime() }));
       timeline.sort((a, b) => b.ts - a.ts);
       setRecords(timeline.slice(0, 10));
