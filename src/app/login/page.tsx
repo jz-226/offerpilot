@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { setAuthUser, addSavedAccount, getSavedAccounts, removeSavedAccount, getUserName } from "@/lib/user";
+import { setAuthUser, getSavedAccounts, removeSavedAccount, getUserName } from "@/lib/user";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -52,7 +52,7 @@ export default function LoginPage() {
       if (data.error) { setError(data.error); setLoading(false); return; }
       if (data.user?.id) {
         setAuthUser(data.user.id);
-        addSavedAccount(email, getUserName() || email.split("@")[0]);
+        // 昵称由 AuthSync 从 Supabase 恢复
       }
       router.push("/welcome");
     } catch { setError("验证失败"); }

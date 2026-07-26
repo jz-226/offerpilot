@@ -21,8 +21,16 @@ export default function AuthSync() {
         const nick = randomNickname();
         await c.from("user_profiles").insert({ user_id: user.id, nickname: nick });
         setProfileNickname(nick);
+        if (user.email) { const { addSavedAccount } = await import("@/lib/user"); addSavedAccount(user.email, nick); }
       } else {
-        setProfileNickname(profile.nickname || "User");
+        const nick = profile.nickname || "User";
+        setProfileNickname(nick);
+        if (user.email) { const { addSavedAccount } = await import("@/lib/user"); addSavedAccount(user.email, nick); }
+        // 同步更新记忆账号列表中的昵称
+        if (nick !== "User" && user.email) {
+          const { addSavedAccount } = await import("@/lib/user");
+          addSavedAccount(user.email, nick);
+        }
 
         // 如果没有选中任何目标
         if (!localStorage.getItem("offerpilot_active_goal")) {
