@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getLatestAnalysis, getLatestGoal, getRecentActivity, getTodayQuizGain } from "@/lib/supabase/service";
 import { supabase, createClient } from "@/lib/supabase/client";
-import { getUserId, getUserName, setActiveGoalId, setUserName, getProfileNickname, getActiveGoalId } from "@/lib/user";
+import { getUserId, getUserName, setActiveGoalId, setUserName, getProfileNickname, getActiveGoalId, fetchUserId } from "@/lib/user";
 import { getMilestone, getNextMilestone } from "@/lib/milestone";
 
 const navItems = [
@@ -58,6 +58,7 @@ export default function ProfilePage() {
   const uid = getUserId();
 
   useEffect(() => {
+    fetchUserId().then((realUid) => {
     setDisplayName(getUserName());
     const goalId = getActiveGoalId();
     Promise.all([
@@ -66,14 +67,14 @@ export default function ProfilePage() {
       goalId ? supabase.from("user_goals").select("*").eq("id", goalId).maybeSingle() : Promise.resolve(null),
       getRecentActivity(),
       getTodayQuizGain(),
-      supabase.from("quiz_results").select("*", { count: "exact", head: true }).eq("user_id", uid),
-      supabase.from("quiz_results").select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(5),
-      supabase.from("reflections").select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(5),
+      supabase.from("quiz_results").select("*", { count: "exact", head: true }).eq("user_id", realUid),
+      supabase.from("quiz_results").select("*").eq("user_id", realUid).order("created_at", { ascending: false }).limit(5),
+      supabase.from("reflections").select("*").eq("user_id", realUid).order("created_at", { ascending: false }).limit(5),
     ]).then(([analysis, goalResult, dates, _gain, { count }, { data: quizData }, { data: reflData }]) => {
       const goal = (goalResult as any)?.data || goalResult;
       if (goal) { setTargetRole(goal.target_role); setTargetCity(goal.target_city); setDeadline(goal.deadline); }
       // 从 Supabase 读取用户的所有目标
-      supabase.from("user_goals").select("*").eq("user_id", uid).order("created_at", { ascending: false })
+      supabase.from("user_goals").select("*").eq("user_id", realUid).order("created_at", { ascending: false })
         .then(({ data }: any) => { if (data) setProfiles(data.map((g: any) => ({ id: String(g.id), role: g.target_role, city: g.target_city, createdAt: g.created_at }))); });
       if (analysis?.ability_scores?.length) {
         setHasData(true);
@@ -94,6 +95,7 @@ export default function ProfilePage() {
       timeline.sort((a, b) => b.ts - a.ts);
       setRecords(timeline.slice(0, 10));
     });
+    }); // close fetchUserId.then
   }, []);
 
   return (
