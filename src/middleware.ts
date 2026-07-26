@@ -1,41 +1,23 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createServerClient } from "@supabase/ssr";
 
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return request.cookies.getAll(); },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value));
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options));
-        },
-      },
-    }
-  );
+  const res = NextResponse.next();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // /auth/callback 放行
+  if (request.nextUrl.pathname.startsWith("/auth/")) return res;
 
-  // /auth/callback 不由中间件拦截（登录回调页）
-  if (request.nextUrl.pathname.startsWith("/auth/")) {
-    return supabaseResponse;
-  }
-
-  // 需要登录的页面
+  // 检查 session cookie 是否存在（<1ms，不调 Supabase API）
   const protectedPaths = ["/dashboard", "/analysis", "/roadmap", "/learning", "/growth", "/reflection", "/profile", "/goal", "/assessment"];
   const isProtected = protectedPaths.some((p) => request.nextUrl.pathname.startsWith(p));
 
-  if (!user && isProtected) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  if (isProtected) {
+    const hasSession = request.cookies.get("sb-wbzrupzghjyuhelycjgr-auth-token");
+    if (!hasSession) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
   }
 
-  return supabaseResponse;
+  return res;
 }
 
 export const config = {
