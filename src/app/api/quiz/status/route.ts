@@ -51,7 +51,7 @@ export async function GET(req: Request) {
       const raw = await chat([
         { role: "system", content: QUIZ_PROMPT },
         { role: "user", content: userPrompt },
-      ], { timeout: 9500, retries: 0, max_tokens: 2048 });
+      ], { timeout: 30000, retries: 0, max_tokens: 2048 });
 
       const json = extractJson(raw);
       const parsed = JSON.parse(json);
