@@ -9,15 +9,15 @@ interface ChatOptions {
   temperature?: number;
   max_tokens?: number;
   json?: boolean;
-  timeout?: number;   // 单次超时 ms，默认 30s
-  retries?: number;   // 额外重试次数，默认 2（共 3 次）
+  timeout?: number;   // 单次超时 ms，默认 60s（推理模型响应波动大）
+  retries?: number;   // 额外重试次数，默认 1（共 2 次）
 }
 
 async function _call(messages: DeepSeekMessage[], options?: ChatOptions) {
   const apiKey = process.env.DEEPSEEK_API_KEY;
   if (!apiKey) throw new Error("DEEPSEEK_API_KEY not configured");
 
-  const timeoutMs = options?.timeout ?? 30000;
+  const timeoutMs = options?.timeout ?? 60000;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -33,6 +33,8 @@ async function _call(messages: DeepSeekMessage[], options?: ChatOptions) {
         messages,
         temperature: options?.temperature ?? 0.3,
         max_tokens: options?.max_tokens ?? 2048,
+        // 关闭 V4 推理模型的思考过程：从 10-20s 降到 ~5s，且内容不再被思考吃掉
+        thinking: { type: "disabled" },
         ...(options?.json === true ? { response_format: { type: "json_object" } } : {}),
       }),
       signal: controller.signal,
@@ -64,7 +66,7 @@ async function _call(messages: DeepSeekMessage[], options?: ChatOptions) {
 }
 
 export async function chat(messages: DeepSeekMessage[], options?: ChatOptions) {
-  const retries = options?.retries ?? 2;
+  const retries = options?.retries ?? 1;
   let lastError: Error | null = null;
   for (let i = 0; i <= retries; i++) {
     try {
